@@ -6,9 +6,7 @@ Main execution script for fMRI analysis in the ecosystem.
 import os
 import sys
 import argparse
-from nipype import Node, SelectFiles, DataSink  # , IdentityInterface
 import fitz
-from fitz import tools
 import os.path as op
 
 
@@ -22,7 +20,7 @@ def main(arglist):
 
     # Subject is always highest level of parameterization
     subject_list = fitz.determine_subjects(args.subjects)
-    subj_source = tools.make_subject_source(subject_list)
+    subj_source = fitz.tools.make_subject_source(subject_list)
 
     # Get the full correct name for the experiment
     if args.experiment is None:
@@ -51,12 +49,14 @@ def main(arglist):
         fitz.run_workflow(preproc, "preproc", args)
 
     if 'onset' in args.workflows:
-        onset_workflow(project, exp, args,
-                       data_dir, analysis_dir, working_dir, subj_source)
+        import fitz.pipes.workflows.onset as f_onset
+        onset = f_onset.workflow(project, exp, args, subj_source)
+        fitz.run_workflow(onset, "onset", args)
 
     if 'model' in args.workflows:
-        model_workflow(project, exp, args,
-                       data_dir, analysis_dir, working_dir, subj_source)
+        import fitz.pipes.workflows.model as f_model
+        model = f_model.workflow(project, exp, args, subj_source)
+        fitz.run_workflow(model, "model", args)
 
 
 def setup_dirs(analysis_dir, exp_base, exp_name, subject_list):
@@ -74,101 +74,11 @@ def setup_dirs(analysis_dir, exp_base, exp_name, subject_list):
                 os.symlink(preproc_dir, link_dir)
 
 
-
-def onset_workflow(project, exp, args,
-                   data_dir, analysis_dir, working_dir,
-                   subj_source):
-    # ----------------------------------------------------------------------- #
-    # Create Onsets
-    # ----------------------------------------------------------------------- #
-
-    # Create SPM.mat onsets files from design file.
-    onset, onset_input, onset_output = wf.create_onset_workflow(
-        exp_info=exp)
-    onset_base = op.join(data_dir, "{subject_id}/design")
-    design_file = exp["design_name"] + ".csv"
-    onset_templates = dict(
-        design_file=op.join(onset_base, design_file),
-    )
-
-    onset_source = Node(SelectFiles(onset_templates), "onsets_source")
-
-    onset_inwrap = tools.InputWrapper(onset, subj_source,
-                                      onset_source, onset_input)
-    onset_inwrap.connect_inputs()
-
-    onset_sink = Node(DataSink(base_directory=analysis_dir), "onset_sink")
-
-    onset_outwrap = tools.OutputWrapper(onset, subj_source,
-                                        onset_sink, onset_output)
-    onset_outwrap.set_subject_container()
-    onset_outwrap.set_mapnode_substitutions(exp["n_runs"])
-    onset_outwrap.sink_outputs("onset")
-
-    # Set temporary output locations
-    onset.base_dir = working_dir
-
-    # Possibly execute the workflow
-    fitz.run_workflow(onset, "onset", args)
-
-
-def model_workflow(project, exp, args,
-                   data_dir, analysis_dir, working_dir,
-                   subj_source):
-    # ----------------------------------------------------------------------- #
-    # Timeseries Model
-    # ----------------------------------------------------------------------- #
-
-    # Create a modelfitting workflow and specific nodes as above
-    model, model_input, model_output = wf.create_timeseries_model_workflow(
-        name="model", exp_info=exp)
-
-    model_base = op.join(analysis_dir, "{subject_id}/preproc/")
-    model_templates = dict(
-        timeseries=op.join(model_base,
-                           'sw*%s*.img' % op.splitext(op.basename(exp["source_template"]))[0]),
-        realignment_params=op.join(model_base, "rp*.txt"),
-        onset_files=op.join(analysis_dir, "{subject_id}/onset/*run*.mat")
-        )
-
-    # if exp["design_name"] is not None:
-    #     design_file = exp["design_name"] + "*.mat"
-    #     regressor_file = exp["design_name"] + ".csv"
-    #     model_templates["design_file"] = op.join(data_dir, "{subject_id}",
-    #                                              "design", design_file)
-    # if exp["regressor_file"] is not None:
-    #     regressor_file = exp["regressor_file"] + ".csv"
-    #     model_templates["regressor_file"] = op.join(data_dir, "{subject_id}",
-    #                                                 "design", regressor_file)
-
-    model_source = Node(SelectFiles(model_templates), "model_source")
-
-    model_inwrap = tools.InputWrapper(model, subj_source,
-                                      model_source, model_input)
-    model_inwrap.connect_inputs()
-
-    model_sink = Node(DataSink(base_directory=analysis_dir), "model_sink")
-
-    model_outwrap = tools.OutputWrapper(model, subj_source,
-                                        model_sink, model_output)
-    model_outwrap.set_subject_container()
-    model_outwrap.set_mapnode_substitutions(exp["n_runs"])
-    model_outwrap.sink_outputs("model")
-
-    # Set temporary output locations
-    model.base_dir = working_dir
-
-    # Possibly execute the workflow
-    fitz.run_workflow(model, "model", args)
-
-
 def parse_args(arglist):
     """Take an arglist and return an argparse Namespace."""
-    # parser = tools.parser
-
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
-    run_parser = tools.run_parser(subparsers)
+    run_parser = fitz.tools.run_parser(subparsers)
 
     return parser.parse_args(arglist)
 
