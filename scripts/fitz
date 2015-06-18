@@ -10,7 +10,6 @@ from nipype import Node, SelectFiles, DataSink  # , IdentityInterface
 import fitz
 from fitz import tools
 import os.path as op
-import fitz.workflows as wf
 
 
 def main(arglist):
@@ -36,15 +35,32 @@ def main(arglist):
         exp_name = "-".join([exp_base, args.altmodel])
 
     # Set roots of output storage
-    data_dir = project["data_dir"]
-    analysis_dir = op.join(project["analysis_dir"], exp_name)
-    working_dir = op.join(project["working_dir"], exp_name)
+    project['analysis_dir'] = op.join(project["analysis_dir"], exp_name)
+    project['working_dir'] = op.join(project["working_dir"], exp_name)
     # nipype.config.set("execution", "crashdump_dir", project["crash_dir"])
     # nipype.config.set("logging", "filemanip_level", 'DEBUG')
     # nipype.config.enable_debug_mode()
     # nipype.logging.update_logging(nipype.config)
 
-    # Create symlinks to the preproc directory for altmodels
+    setup_dirs(project['analysis_dir'], exp_base, exp_name, subject_list)
+
+    if 'preproc' in args.workflows:
+        # Possibly execute the workflow, depending on the command line
+        import fitz.pipes.workflows.preproc as f_preproc
+        preproc = f_preproc.workflow(project, exp, args, subj_source)
+        fitz.run_workflow(preproc, "preproc", args)
+
+    if 'onset' in args.workflows:
+        onset_workflow(project, exp, args,
+                       data_dir, analysis_dir, working_dir, subj_source)
+
+    if 'model' in args.workflows:
+        model_workflow(project, exp, args,
+                       data_dir, analysis_dir, working_dir, subj_source)
+
+
+def setup_dirs(analysis_dir, exp_base, exp_name, subject_list):
+    """Create symlinks to the preproc directory for altmodels"""
     if not op.exists(analysis_dir):
         os.makedirs(analysis_dir)
     if exp_base != exp_name:
@@ -57,60 +73,6 @@ def main(arglist):
                 preproc_dir = op.join("../..", exp_base, subj, "preproc")
                 os.symlink(preproc_dir, link_dir)
 
-    if 'preproc' in args.workflows:
-        preproc_workflow(project, exp, args,
-                         data_dir, analysis_dir, working_dir, subj_source)
-
-    if 'onset' in args.workflows:
-        onset_workflow(project, exp, args,
-                       data_dir, analysis_dir, working_dir, subj_source)
-
-    if 'model' in args.workflows:
-        model_workflow(project, exp, args,
-                       data_dir, analysis_dir, working_dir, subj_source)
-
-
-def preproc_workflow(project, exp, args,
-                     data_dir, analysis_dir, working_dir,
-                     subj_source):
-    # ----------------------------------------------------------------------- #
-    # Preprocessing Workflow
-    # ----------------------------------------------------------------------- #
-
-    # Create workflow in function defined elsewhere in this package
-    preproc, preproc_input, preproc_output = wf.create_preprocessing_workflow(
-                                                exp_info=exp)
-
-    # Collect raw nifti data
-    preproc_templates = dict(timeseries=exp["source_template"],
-                             anat=exp["anat_template"])
-
-    preproc_source = Node(SelectFiles(preproc_templates,
-                                      base_directory=project["data_dir"]),
-                          "preproc_source")
-
-    # Convenience class to handle some sterotyped connections
-    # between run-specific nodes (defined here) and the inputs
-    # to the prepackaged workflow returned above
-    preproc_inwrap = tools.InputWrapper(preproc, subj_source,
-                                        preproc_source, preproc_input)
-    preproc_inwrap.connect_inputs()
-
-    # Store workflow outputs to persistant location
-    preproc_sink = Node(DataSink(base_directory=analysis_dir), "preproc_sink")
-
-    # Similar to above, class to handle sterotyped output connections
-    preproc_outwrap = tools.OutputWrapper(preproc, subj_source,
-                                          preproc_sink, preproc_output)
-    preproc_outwrap.set_subject_container()
-    preproc_outwrap.set_mapnode_substitutions(exp["n_runs"])
-    preproc_outwrap.sink_outputs("preproc")
-
-    # Set the base for the possibly temporary working directory
-    preproc.base_dir = working_dir
-
-    # Possibly execute the workflow, depending on the command line
-    fitz.run_workflow(preproc, "preproc", args)
 
 
 def onset_workflow(project, exp, args,
