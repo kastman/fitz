@@ -1,3 +1,3 @@
-[submodule "fitz/workflows"]
-	path = fitz/workflows
-	url = /Users/kastman/Dropbox/projects/nwlabs_fitzspm/
+[submodule "fitz/pipes"]
+	path = fitz/pipes
+	url = git@ncfgit.rc.fas.harvard.edu:kastman/nwlabs_fitz.git
