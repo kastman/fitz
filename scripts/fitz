@@ -9,12 +9,19 @@ import argparse
 import fitz
 import os.path as op
 
+import setup_project
+
 
 def main(arglist):
-    """Main function for workflow setup and execution."""
+    """Main function for handing off execution from the command line."""
     args = parse_args(arglist)
 
-    # Get and process specific information
+    # Call the function determined by the chosen subparser.
+    args.func(args)
+
+
+def run(args):
+    """Get and process specific information"""
     project = fitz.gather_project_info()
     exp = fitz.gather_experiment_info(args.experiment, args.altmodel)
 
@@ -79,6 +86,11 @@ def parse_args(arglist):
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
     run_parser = fitz.tools.run_parser(subparsers)
+    run_parser.set_defaults(func=run)
+
+    setup_parser = subparsers.add_parser('setup', help='setup')
+    setup_parser.description = 'setup a new fitz directory'
+    setup_parser.set_defaults(func=setup_project.main)
 
     return parser.parse_args(arglist)
 

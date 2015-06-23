@@ -202,10 +202,7 @@ def do_prompt(d, key, text, default=None, validator=nonempty):
     d[key] = x
 
 
-
-
-def main():
-
+def main(_):
     d = dict()
 
     if not color_terminal():
@@ -281,4 +278,4 @@ Please use relative paths.
     f.close()
 
 if __name__ == "__main__":
-    main()
+    main(sys.args)
