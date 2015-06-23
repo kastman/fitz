@@ -13,6 +13,8 @@ Documentation Contents
    :maxdepth: 2
 
    workflows
+   tutorial
+   tutorial_nwlabs
 
 Indices and tables
 ==================

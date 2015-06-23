@@ -15,6 +15,7 @@
 import sys
 import os
 import shlex
+import sphinx_bootstrap_theme
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -117,15 +118,19 @@ todo_include_todos = False
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = 'bootstrap'
+# Add any paths that contain custom themes here, relative to this directory.
 
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-#html_theme_options = {}
+html_theme_options = {
+    'source_link_position': "footer",
+    'bootswatch_theme': "lumen",
+    'navbar_sidebarrel': False,
+    'bootstrap_version': "3",
+    'navbar_links': [("Github", "https://github.com/kastman/fitz", True)],
+    }
 
 # Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
