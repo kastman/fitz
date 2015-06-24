@@ -6,25 +6,33 @@ one subject from our tutorial experiment.
 
 1. ``fitz setup`` directories and paths.
 
-2. Copy source behavioral logs ``cp logfiles`` & download data with ``ArcGet.py``.
+2. Download and prepare prepare images with ``ArcGet.py`` and ``dcmstack``.
 
-3. Create design file.
+3. Copy logfiles and create design file.
 
 4. Setup ``experiment.py`` with experiment processing parameters.
 
 5. Tell fitz which subs to run with ``subjects.txt``
 
-5. ``fitz run -w workflows``
+6. Have fitz download the requested workflow with ``fitz install``
+
+7. Do all the things.  ``fitz run -w workflows``
 
 
 Setup Directories and **project.py**
 -------------------------------------
 
-Fitz includes a script to create the FITZ_DIR/project.py file to specify
-directories and some project options.
+There are 3 important directories in a standard project:
 
-First, create a directory for your project and run `fitz setup` from the new
-*FITZ_DIR* directory that will hold your configuration files.
+1. **fitz** dir: Configuration files and some scripts.
+2. **data** dir: Raw data and logfiles.
+3. **analysis** dir: Outputs of the workflows and processed data.
+
+The first setup file to create is the *FITZ_DIR*/project.py, which lists the
+paths to each of these directories.
+
+First, create a directory for your project and a fitz dir (config dir) inside
+it, then run ```fitz setup`` from the new *FITZ_DIR* directory.
 
 .. code-block:: bash
 
@@ -103,6 +111,7 @@ For this DD task, we will map the following columns from the logfiles:
 +---------------------+-----------+----------+--------------+----------------+
 
 .. code-block:: bash
+
     # Make folders for the logfiles and design files
     mkdir logfiles design
 
@@ -137,7 +146,7 @@ Paste the following settings in to DD.py:
     # Workflow Parameters
     # --------------------
     workflow = "nwlabs_spm"
-    workflow_src = "http://ncfgit.rc.fas.harvard.edu/kastman/fitz.git"
+    workflow_src = "git@ncfgit.rc.fas.harvard.edu:kastman/nwlabs_fitz.git"
     workflow_version = "0.0.1.dev"
 
     # Preproc Parameters

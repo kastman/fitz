@@ -3,6 +3,8 @@
 Main execution script for fMRI analysis in the ecosystem.
 
 """
+print 'Running Fitz...'
+
 import os
 import sys
 import argparse
@@ -10,8 +12,8 @@ import fitz
 import os.path as op
 from nipype import config
 import setup_project
+import subprocess
 
-print 'Running Fitz...'
 
 def main(arglist):
     """Main function for handing off execution from the command line."""
@@ -86,9 +88,13 @@ def install(args):
     project = fitz.gather_project_info()
     exp = fitz.gather_experiment_info(project['default_exp'])
 
-    print 'TODO Setup reading source from experiment files'
-    print 'git clone %s' % exp['workflow_src']
-    print 'git checkout %s' % exp['workflow_version']
+    cmd =['git', 'clone', exp['workflow_src']]
+    print ' '.join(cmd)
+    subprocess.check_call(cmd)
+
+    cmd =['git', 'checkout', exp['workflow_version']]
+    print ' '.join(cmd)
+    # subprocess.check_call(cmd)
 
 
 def parse_args(arglist):
