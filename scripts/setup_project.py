@@ -124,9 +124,6 @@ crash_dir = '%(crash_dir)s'
 # Set this to True to remove the working directory after each excecution
 rm_working_dir = %(rm_work_dir)s
 
-# Should normalization be performed using ANTS?
-ants_normalization = %(ants_norm)s
-
 """
 
 def mkdir_p(dir):
@@ -259,14 +256,10 @@ Please use relative paths.
 
     crash_stem = "niypype-" + os.environ.get("LOGNAME", "-") + "-crashes"
     do_prompt(d, "crash_dir", "Crashdump path",
-              op.join("/tmp", crash_stem))
+              op.join("../analysis", crash_stem))
 
     do_prompt(d, "rm_work_dir", "Remove working directory after execution? (Y/n)",
               "y", boolean)
-
-    do_prompt(d, "ants_norm", "Use ANTS for normalization? (y/N)",
-              "n", boolean)
-
 
     # Record the time this happened
     d['now'] = time.asctime()
@@ -276,6 +269,10 @@ Please use relative paths.
     conf_text = PROJECT_CONF % d
     f.write(conf_text.encode("utf-8"))
     f.close()
+
+    # Create Data Directory
+    if not op.isdir(d['data_dir']):
+        os.makedirs(d['data_dir'])
 
 if __name__ == "__main__":
     main(sys.args)

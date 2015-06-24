@@ -8,9 +8,10 @@ import sys
 import argparse
 import fitz
 import os.path as op
-
+from nipype import config
 import setup_project
 
+print 'Running Fitz...'
 
 def main(arglist):
     """Main function for handing off execution from the command line."""
@@ -42,7 +43,8 @@ def run(args):
     # Set roots of output storage
     project['analysis_dir'] = op.join(project["analysis_dir"], exp_name)
     project['working_dir'] = op.join(project["working_dir"], exp_name)
-    # nipype.config.set("execution", "crashdump_dir", project["crash_dir"])
+
+    config.set("execution", "crashdump_dir", project["crash_dir"])
     # nipype.config.set("logging", "filemanip_level", 'DEBUG')
     # nipype.config.enable_debug_mode()
     # nipype.logging.update_logging(nipype.config)
@@ -80,6 +82,14 @@ def setup_dirs(analysis_dir, exp_base, exp_name, subject_list):
                 preproc_dir = op.join("../..", exp_base, subj, "preproc")
                 os.symlink(preproc_dir, link_dir)
 
+def install(args):
+    project = fitz.gather_project_info()
+    exp = fitz.gather_experiment_info(project['default_exp'])
+
+    print 'TODO Setup reading source from experiment files'
+    print 'git clone %s' % exp['workflow_src']
+    print 'git checkout %s' % exp['workflow_version']
+
 
 def parse_args(arglist):
     """Take an arglist and return an argparse Namespace."""
@@ -91,6 +101,10 @@ def parse_args(arglist):
     setup_parser = subparsers.add_parser('setup', help='setup')
     setup_parser.description = 'setup a new fitz directory'
     setup_parser.set_defaults(func=setup_project.main)
+
+    install_parser = subparsers.add_parser('install', help='install workflows')
+    install_parser.description = 'Install workflows requested by experiments'
+    install_parser.set_defaults(func=install)
 
     return parser.parse_args(arglist)
 
