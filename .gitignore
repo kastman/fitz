@@ -3,5 +3,4 @@
 data
 .DS_Store
 analysis
-doc/_build
-
+._*

@@ -119,7 +119,7 @@ For this DD task, we will map the following columns from the logfiles:
     cp /ncf/jwb/studies/PrisonReward/Active/Subject_Data/RSA_DD_Active/1819_2012_Aug_22_????.* logfiles/
 
     # Create the design files using the textOnsets2long script (or do it yourself)
-    textOnsets2long.py logfiles/*.csv --out design/DD-Model1.csv --conditions-col choice --time-col cuesTime --durations-col trialResp.rt --pmods-col choiceInt
+    textOnsets2long.py logfiles/*.csv --out design/DD-Model1.csv --condition-col choice --onset-col cuesTime --duration-col trialResp.rt --pmods-col choiceInt
 
 Waskom's `Lyman Documentation`_ also has more info on the design file.
 
@@ -137,7 +137,7 @@ file `DD.py`.
 .. code-block:: bash
 
     cd ../../fitz
-    atom DD.py
+    gedit DD.py
 
 Paste the following settings in to DD.py:
 

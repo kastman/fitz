@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial &mdash; fitz 0.0.1.dev documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootswatch-3.3.4/lumen/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1.dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="fitz 0.0.1.dev documentation" href="index.html" />
+    <link rel="prev" title="Tutorial" href="tutorial.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          fitz</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.0.1.dev</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="https://github.com/kastman/fitz">Github</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflow Inputs and Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Tutorial</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#setup-directories-and-project-py">Setup Directories and <strong>project.py</strong></a></li>
+<li><a class="reference internal" href="#prepare-images-data-in-the-data-directory">Prepare images data in the <em>data</em> directory</a></li>
+<li><a class="reference internal" href="#copy-logfiles-and-create-the-design-file">Copy logfiles and create the Design File</a></li>
+<li><a class="reference internal" href="#setup-experiment-file-dd-py">Setup Experiment File <strong>DD.py</strong></a></li>
+<li><a class="reference internal" href="#setup-subjects-txt">Setup subjects.txt</a></li>
+<li><a class="reference internal" href="#install-workflows">Install Workflows</a></li>
+<li><a class="reference internal" href="#run-workflows">Run Workflows</a></li>
+<li><a class="reference internal" href="#bonus-alternative-models">Bonus: Alternative Models</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      
+  <div class="section" id="tutorial">
+<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<p>The following instructions will help you get tutorial data, setup and run
+one subject from our tutorial experiment.</p>
+<ol class="arabic simple">
+<li><tt class="docutils literal"><span class="pre">fitz</span> <span class="pre">setup</span></tt> directories and paths.</li>
+<li>Download and prepare prepare images with <tt class="docutils literal"><span class="pre">ArcGet.py</span></tt> and <tt class="docutils literal"><span class="pre">dcmstack</span></tt>.</li>
+<li>Copy logfiles and create design file.</li>
+<li>Setup <tt class="docutils literal"><span class="pre">experiment.py</span></tt> with experiment processing parameters.</li>
+<li>Tell fitz which subs to run with <tt class="docutils literal"><span class="pre">subjects.txt</span></tt></li>
+<li>Have fitz download the requested workflow with <tt class="docutils literal"><span class="pre">fitz</span> <span class="pre">install</span></tt></li>
+<li>Do all the things.  <tt class="docutils literal"><span class="pre">fitz</span> <span class="pre">run</span> <span class="pre">-w</span> <span class="pre">workflows</span></tt></li>
+</ol>
+<div class="section" id="setup-directories-and-project-py">
+<h2>Setup Directories and <strong>project.py</strong><a class="headerlink" href="#setup-directories-and-project-py" title="Permalink to this headline">¶</a></h2>
+<p>There are 3 important directories in a standard project:</p>
+<ol class="arabic simple">
+<li><strong>fitz</strong> dir: Configuration files and some scripts.</li>
+<li><strong>data</strong> dir: Raw data and logfiles.</li>
+<li><strong>analysis</strong> dir: Outputs of the workflows and processed data.</li>
+</ol>
+<p>The first setup file to create is the <em>FITZ_DIR</em>/project.py, which lists the
+paths to each of these directories.</p>
+<p>First, create a directory for your project and a fitz dir (config dir) inside
+it, then run <tt class="docutils literal"><span class="pre">`fitz</span> <span class="pre">setup</span></tt> from the new <em>FITZ_DIR</em> directory.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nb">cd</span> /ncf/jwb/studies/PrisonReward/Active/Analyses
+mkdir -p spmFMRI/fitz
+<span class="nb">cd </span>spmFMRI/fitz
+fitz setup
+</pre></div>
+</div>
+<p>Then answer questions or accept defaults:</p>
+<div class="highlight-python"><div class="highlight"><pre>Let&#39;s set up your project.
+
+Please enter values for the following settings (just press Enter to
+accept a default value, if one is given in brackets).
+
+Please use relative paths.
+
+&gt; Project name: PrisonReward
+&gt; Default experiment: DD
+&gt; Data tree path [../data]:
+&gt; Analysis tree path [../analysis]:
+&gt; Working tree path [../analysis/workingdir]:
+&gt; Crashdump path [../analysis/niypype-kastman-crashes]:
+&gt; Remove working directory after execution? (Y/n) [y]:
+</pre></div>
+</div>
+</div>
+<div class="section" id="prepare-images-data-in-the-data-directory">
+<h2>Prepare images data in the <em>data</em> directory<a class="headerlink" href="#prepare-images-data-in-the-data-directory" title="Permalink to this headline">¶</a></h2>
+<p>For this tutorial, you will download dicom data from the CBS Central xnat
+server.</p>
+<p>We&#8217;re going to use one real subject from the PrisonReward study as an example.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nb">cd</span> ../data
+
+<span class="c"># Use ArcGet.py to download T1 &amp; BOLD dicoms from CBS Central</span>
+ArcGet.py -a cbscentral -s M87100094 -r MPRAGE,BOLD
+
+<span class="c"># Change to the subject directory and create a folder for the .nii images</span>
+<span class="nb">cd </span>M87100094
+mkdir images
+
+<span class="c"># Use dcmstack to convert images from DICOM to Nifti format</span>
+dcmstack --embed-meta --dest-dir images --output-ext .nii RAW/
+</pre></div>
+</div>
+</div>
+<div class="section" id="copy-logfiles-and-create-the-design-file">
+<h2>Copy logfiles and create the Design File<a class="headerlink" href="#copy-logfiles-and-create-the-design-file" title="Permalink to this headline">¶</a></h2>
+<p>Create a plain-text &#8220;design file&#8221; in <cite>csv</cite> format for all runs containing
+columns for onset times, durations, conditions and parametric modulators.</p>
+<p>At a minium the design file should contain columns for &#8220;run&#8221;, &#8220;condition&#8221;, and
+&#8220;onset&#8221;; it may also have columns for duration and &#8220;pmod-&#8221; columns that will be
+entered as parametric modulators.</p>
+<p>An extremely simple design file would look like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">run</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">onset</span>
+<span class="mi">1</span><span class="p">,</span> <span class="n">sooner</span><span class="p">,</span> <span class="mi">0</span>
+<span class="mi">1</span><span class="p">,</span> <span class="n">sooner</span><span class="p">,</span> <span class="mi">12</span>
+<span class="mi">2</span><span class="p">,</span> <span class="n">sooner</span><span class="p">,</span> <span class="mi">0</span>
+<span class="mi">2</span><span class="p">,</span> <span class="n">later</span><span class="p">,</span> <span class="mi">12</span>
+</pre></div>
+</div>
+<p>For this DD task, we will map the following columns from the logfiles:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="15%" />
+<col width="14%" />
+<col width="19%" />
+<col width="22%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">design column name</th>
+<th class="head">condition</th>
+<th class="head">onset</th>
+<th class="head">duration</th>
+<th class="head">pmod-ChoiceInt</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>logfile column name</td>
+<td>choice</td>
+<td>cuesTime</td>
+<td>trialResp.rt</td>
+<td>choiceInt</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-bash"><div class="highlight"><pre><span class="c"># Make folders for the logfiles and design files</span>
+mkdir logfiles design
+
+<span class="c"># Copy the logfiles for the tutorial subject to the data directory</span>
+cp /ncf/jwb/studies/PrisonReward/Active/Subject_Data/RSA_DD_Active/1819_2012_Aug_22_????.* logfiles/
+
+<span class="c"># Create the design files using the textOnsets2long script (or do it yourself)</span>
+textOnsets2long.py logfiles/*.csv --out design/DD-Model1.csv --conditions-col choice --time-col cuesTime --durations-col trialResp.rt --pmods-col choiceInt
+</pre></div>
+</div>
+<p>Waskom&#8217;s <a class="reference external" href="http://stanford.edu/~mwaskom/software/lyman/experiments.html#the-design-file">Lyman Documentation</a> also has more info on the design file.</p>
+</div>
+<div class="section" id="setup-experiment-file-dd-py">
+<h2>Setup Experiment File <strong>DD.py</strong><a class="headerlink" href="#setup-experiment-file-dd-py" title="Permalink to this headline">¶</a></h2>
+<p>Experiments are configured by creating a file called <tt class="docutils literal"><span class="pre">&lt;experiment_name&gt;.py</span></tt>.
+This is just a regular python file that defines options and variables used
+by the workflows.</p>
+<p>Change directories back to the <em>FITZ_DIR</em>, and use a text editor to edit the
+file <cite>DD.py</cite>.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nb">cd</span> ../../fitz
+atom DD.py
+</pre></div>
+</div>
+<p>Paste the following settings in to DD.py:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Workflow Parameters</span>
+<span class="c"># --------------------</span>
+<span class="n">workflow</span> <span class="o">=</span> <span class="s">&quot;nwlabs_spm&quot;</span>
+<span class="n">workflow_src</span> <span class="o">=</span> <span class="s">&quot;git@ncfgit.rc.fas.harvard.edu:kastman/nwlabs_fitz.git&quot;</span>
+<span class="n">workflow_version</span> <span class="o">=</span> <span class="s">&quot;0.0.1.dev&quot;</span>
+
+<span class="c"># Preproc Parameters</span>
+<span class="c"># -------------------</span>
+<span class="n">func_template</span> <span class="o">=</span> <span class="s">&quot;{subject_id}/images/*dd*&quot;</span>
+<span class="n">anat_template</span> <span class="o">=</span> <span class="s">&quot;{subject_id}/images/*mprage*&quot;</span>
+
+<span class="n">n_runs</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">TR</span> <span class="o">=</span> <span class="mf">2.5</span>
+<span class="n">temporal_interp</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">interleaved</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="n">slice_order</span> <span class="o">=</span> <span class="s">&#39;up&#39;</span>
+<span class="n">num_slices</span> <span class="o">=</span> <span class="mi">33</span>
+<span class="n">smooth_fwhm</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="n">hpcutoff</span> <span class="o">=</span> <span class="mi">120</span>
+
+<span class="n">bases</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;hrf&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;derivs&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]}}</span>
+<span class="n">estimation_method</span> <span class="o">=</span> <span class="s">&#39;Classical&#39;</span>
+
+<span class="c"># Default Model Parameters</span>
+<span class="c"># -------------------------</span>
+<span class="n">design_name</span> <span class="o">=</span> <span class="s">&#39;DD-Model1&#39;</span>
+<span class="n">input_units</span> <span class="o">=</span> <span class="n">output_units</span> <span class="o">=</span> <span class="s">&#39;secs&#39;</span>
+<span class="n">contrasts</span> <span class="o">=</span> <span class="p">[</span>
+  <span class="p">(</span><span class="s">&#39;all trials&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;sooner&#39;</span><span class="p">,</span> <span class="s">&#39;later&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>                <span class="c"># 1</span>
+  <span class="p">(</span><span class="s">&#39;choice&#39;</span><span class="p">,</span>     <span class="p">[</span><span class="s">&#39;soonerxchoice^1&#39;</span><span class="p">,</span> <span class="s">&#39;laterxchoice^1&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span>  <span class="c"># 2</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="setup-subjects-txt">
+<h2>Setup subjects.txt<a class="headerlink" href="#setup-subjects-txt" title="Permalink to this headline">¶</a></h2>
+<p>A subjects.txt file in the fitz directory is used to list all the subjects
+that should be included. Since we&#8217;re only processing a single subject you can
+skip this step and use the &#8220;-r sub001&#8221; option, or create a text file with
+one line:</p>
+<div class="highlight-python"><div class="highlight"><pre>echo M87100094 &gt; subjects.txt
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-workflows">
+<h2>Install Workflows<a class="headerlink" href="#install-workflows" title="Permalink to this headline">¶</a></h2>
+<p>Install the workflows requested by the experiment file. This downloads the
+exact version of the workflow as specified and copies it into the scripts
+directory. You only have to do this once at the start (or any time that the
+workflow changes, which should ideally be never).</p>
+<div class="highlight-bash"><div class="highlight"><pre>fitz install
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-workflows">
+<h2>Run Workflows<a class="headerlink" href="#run-workflows" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash"><div class="highlight"><pre>fitz run -w onsets preproc model
+</pre></div>
+</div>
+</div>
+<div class="section" id="bonus-alternative-models">
+<h2>Bonus: Alternative Models<a class="headerlink" href="#bonus-alternative-models" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash"><div class="highlight"><pre>cp DD.py DD-Model2.py
+</pre></div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="51%" />
+<col width="49%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">logfile column name</th>
+<th class="head">design column name</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>immediacy</td>
+<td>condition</td>
+</tr>
+<tr class="row-odd"><td>cuesTime</td>
+<td>onset</td>
+</tr>
+<tr class="row-even"><td>trialResp.rt</td>
+<td>duration</td>
+</tr>
+<tr class="row-odd"><td>choiceInt</td>
+<td>pmod-ChoiceInt</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+<div id="sourcelink">
+  <a href="_sources/tutorial_nwlabs.txt"
+     rel="nofollow">Source</a>
+</div>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015, Erik Kastman.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
