@@ -182,6 +182,6 @@ def determine_engine(args):
 def run_workflow(wf, name=None, args=None):
     """Run a workflow, if we asked to do so on the command line."""
     plugin, plugin_args = determine_engine(args)
-    wf.write_graph(str(wf) + '.png')
+    wf.write_graph(str(wf), format='svg')
     if (name is None or name in args.workflows) and not args.dontrun:
         wf.run(plugin, plugin_args)

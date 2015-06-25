@@ -146,7 +146,7 @@ def run_parser(subparsers):
     parser.add_argument("--experiment", "-e", help="experimental paradigm")
     parser.add_argument("--altmodel", "-a", help="alternate model to fit")
     parser.add_argument("--workflows", "-w", nargs="*",
-                        choices=["preproc", "onset", "model"],
+                        choices=["xnatconvert", "preproc", "onset", "model"],
                         help="which workflows to run")
     parser.add_argument("--subjects", "-s", nargs="*", dest="subjects",
                         help=("list of subject ids, name of file in lyman "

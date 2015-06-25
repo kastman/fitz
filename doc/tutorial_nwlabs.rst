@@ -58,6 +58,10 @@ Then answer questions or accept defaults::
     > Crashdump path [../analysis/niypype-kastman-crashes]:
     > Remove working directory after execution? (Y/n) [y]:
 
+Finally, set an environment variable to tell fitz where to look for
+configurations::
+
+    export FITZ_DIR=`pwd`
 
 
 Prepare images data in the *data* directory
@@ -162,6 +166,7 @@ Paste the following settings in to DD.py:
     num_slices = 33
     smooth_fwhm = 6
     hpcutoff = 120
+    frames_to_toss = 0
 
     bases = {'hrf': {'derivs': [0, 0]}}
     estimation_method = 'Classical'

@@ -172,6 +172,11 @@ Please use relative paths.
 &gt; Remove working directory after execution? (Y/n) [y]:
 </pre></div>
 </div>
+<p>Finally, set an environment variable to tell fitz where to look for
+configurations:</p>
+<div class="highlight-python"><div class="highlight"><pre>export FITZ_DIR=`pwd`
+</pre></div>
+</div>
 </div>
 <div class="section" id="prepare-images-data-in-the-data-directory">
 <h2>Prepare images data in the <em>data</em> directory<a class="headerlink" href="#prepare-images-data-in-the-data-directory" title="Permalink to this headline">¶</a></h2>
@@ -240,7 +245,7 @@ mkdir logfiles design
 cp /ncf/jwb/studies/PrisonReward/Active/Subject_Data/RSA_DD_Active/1819_2012_Aug_22_????.* logfiles/
 
 <span class="c"># Create the design files using the textOnsets2long script (or do it yourself)</span>
-textOnsets2long.py logfiles/*.csv --out design/DD-Model1.csv --conditions-col choice --time-col cuesTime --durations-col trialResp.rt --pmods-col choiceInt
+textOnsets2long.py logfiles/*.csv --out design/DD-Model1.csv --condition-col choice --onset-col cuesTime --duration-col trialResp.rt --pmods-col choiceInt
 </pre></div>
 </div>
 <p>Waskom&#8217;s <a class="reference external" href="http://stanford.edu/~mwaskom/software/lyman/experiments.html#the-design-file">Lyman Documentation</a> also has more info on the design file.</p>
@@ -253,7 +258,7 @@ by the workflows.</p>
 <p>Change directories back to the <em>FITZ_DIR</em>, and use a text editor to edit the
 file <cite>DD.py</cite>.</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nb">cd</span> ../../fitz
-atom DD.py
+gedit DD.py
 </pre></div>
 </div>
 <p>Paste the following settings in to DD.py:</p>

@@ -53,6 +53,11 @@ def run(args):
 
     setup_dirs(project['analysis_dir'], exp_base, exp_name, subject_list)
 
+    if 'xnatconvert' in args.workflows:
+        import fitz.pipes.workflows.xnatconvert as f_xnatconvert
+        xnatconvert = f_xnatconvert.workflow(project, exp, args, subj_source)
+        fitz.run_workflow(xnatconvert, "xnatconvert", args)
+
     if 'preproc' in args.workflows:
         # Possibly execute the workflow, depending on the command line
         import fitz.pipes.workflows.preproc as f_preproc
