@@ -142,7 +142,7 @@ def determine_subjects(subject_arg=None):
     """Intelligently find a list of subjects in a variety of ways."""
     if subject_arg is None:
         subject_file = op.join(os.environ["FITZ_DIR"], "subjects.txt")
-        subjects = np.loadtxt(subject_file, str).tolist()
+        subjects = np.loadtxt(subject_file, str, ndmin=1).tolist()
     elif op.isfile(subject_arg[0]):
         subjects = np.loadtxt(subject_arg[0], str).tolist()
     else:

@@ -3,7 +3,7 @@
 Main execution script for fMRI analysis in the ecosystem.
 
 """
-print 'Running Fitz...'
+print 'Fitz: Version 0.0.1dev'
 
 import os
 import sys
