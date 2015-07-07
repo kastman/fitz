@@ -149,9 +149,16 @@ Paste the following settings in to DD.py:
 
     # Workflow Parameters
     # --------------------
-    workflow = "nwlabs_spm"
     workflow_src = "git@ncfgit.rc.fas.harvard.edu:kastman/nwlabs_fitz.git"
     workflow_version = "0.0.1.dev"
+
+    # Xnat Download and Convert
+    struct_offset = 0
+    func_offset = 0
+    xnat_project = 'Buckholtz RSA'
+    struct_pattern = 'mprage%RMS'
+    func_pattern = 'ddt%'
+    server = 'https://cbscentral.rc.fas.harvard.edu'
 
     # Preproc Parameters
     # -------------------
@@ -166,6 +173,7 @@ Paste the following settings in to DD.py:
     num_slices = 33
     smooth_fwhm = 6
     hpcutoff = 120
+    frames_to_toss = 0
 
     bases = {'hrf': {'derivs': [0, 0]}}
     estimation_method = 'Classical'

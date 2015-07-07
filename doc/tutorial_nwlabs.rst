@@ -149,14 +149,28 @@ Paste the following settings in to DD.py:
 
     # Workflow Parameters
     # --------------------
-    workflow = "nwlabs_spm"
     workflow_src = "git@ncfgit.rc.fas.harvard.edu:kastman/nwlabs_fitz.git"
     workflow_version = "0.0.1.dev"
 
+    # Xnat Download and Convert
+    struct_offset = 0
+    func_offset = 0
+    xnat_project = 'Buckholtz RSA'
+    struct_pattern = 'mprage%RMS'
+    func_pattern = 'ddt%'
+    server = 'https://cbscentral.rc.fas.harvard.edu'
+
     # Preproc Parameters
     # -------------------
+
+    ## TODO Get rid of these with xnat download and convert
     func_template = "{subject_id}/images/*dd*"
     anat_template = "{subject_id}/images/*mprage*"
+
+    ## TODO Add sanity check that ensures these are true
+
+    ## TODO Add motion_correct = True
+    ## TODO Print default options
 
     n_runs = 3
     TR = 2.5
@@ -173,6 +187,12 @@ Paste the following settings in to DD.py:
 
     # Default Model Parameters
     # -------------------------
+
+    ## TODO Move models to their own files and
+    ##      inspect directory for them; no default file.
+    ## How to have extra config files for different workflows?
+    ## Just code that into the workflow of what to look for?
+
     design_name = 'DD-Model1'
     input_units = output_units = 'secs'
     contrasts = [
@@ -201,6 +221,9 @@ directory. You only have to do this once at the start (or any time that the
 workflow changes, which should ideally be never).
 
 .. code-block:: bash
+
+    ## TODO make sure fitz clones to the FITZ_DIR
+    ##      and make sure that it reads pipelines there
 
     fitz install
 

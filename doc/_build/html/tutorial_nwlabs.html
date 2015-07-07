@@ -264,9 +264,16 @@ gedit DD.py
 <p>Paste the following settings in to DD.py:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Workflow Parameters</span>
 <span class="c"># --------------------</span>
-<span class="n">workflow</span> <span class="o">=</span> <span class="s">&quot;nwlabs_spm&quot;</span>
 <span class="n">workflow_src</span> <span class="o">=</span> <span class="s">&quot;git@ncfgit.rc.fas.harvard.edu:kastman/nwlabs_fitz.git&quot;</span>
 <span class="n">workflow_version</span> <span class="o">=</span> <span class="s">&quot;0.0.1.dev&quot;</span>
+
+<span class="c"># Xnat Download and Convert</span>
+<span class="n">struct_offset</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">func_offset</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">xnat_project</span> <span class="o">=</span> <span class="s">&#39;Buckholtz RSA&#39;</span>
+<span class="n">struct_pattern</span> <span class="o">=</span> <span class="s">&#39;mprage%RMS&#39;</span>
+<span class="n">func_pattern</span> <span class="o">=</span> <span class="s">&#39;ddt%&#39;</span>
+<span class="n">server</span> <span class="o">=</span> <span class="s">&#39;https://cbscentral.rc.fas.harvard.edu&#39;</span>
 
 <span class="c"># Preproc Parameters</span>
 <span class="c"># -------------------</span>
@@ -281,6 +288,7 @@ gedit DD.py
 <span class="n">num_slices</span> <span class="o">=</span> <span class="mi">33</span>
 <span class="n">smooth_fwhm</span> <span class="o">=</span> <span class="mi">6</span>
 <span class="n">hpcutoff</span> <span class="o">=</span> <span class="mi">120</span>
+<span class="n">frames_to_toss</span> <span class="o">=</span> <span class="mi">0</span>
 
 <span class="n">bases</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;hrf&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;derivs&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]}}</span>
 <span class="n">estimation_method</span> <span class="o">=</span> <span class="s">&#39;Classical&#39;</span>
