@@ -15,6 +15,7 @@ Documentation Contents
    workflows
    tutorial
    tutorial_nwlabs
+   new_fitz_pipelines
 
 Indices and tables
 ==================

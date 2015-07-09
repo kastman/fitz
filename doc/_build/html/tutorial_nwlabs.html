@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tutorial &mdash; fitz 0.0.1.dev documentation</title>
+    <title>Tutorial &mdash; fitz 0.0.1-dev documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.0.1.dev',
+        VERSION:     '0.0.1-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,12 +24,13 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
     <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="fitz 0.0.1.dev documentation" href="index.html" />
+    <link rel="top" title="fitz 0.0.1-dev documentation" href="index.html" />
+    <link rel="next" title="Creating New Fitz Pipelines" href="new_fitz_pipelines.html" />
     <link rel="prev" title="Tutorial" href="tutorial.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
@@ -37,7 +38,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 
   </head>
-  <body>
+  <body role="document">
 
   <div id="navbar" class="navbar navbar-default navbar-fixed-top">
     <div class="container">
@@ -50,7 +51,7 @@
         </button>
         <a class="navbar-brand" href="index.html">
           fitz</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.0.1.dev</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.0.1-dev</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -71,6 +72,7 @@
 <li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflow Inputs and Outputs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="new_fitz_pipelines.html">Creating New Fitz Pipelines</a></li>
 </ul>
 </ul>
 </li>
@@ -86,16 +88,15 @@
       aria-labelledby="dLabelLocalToc"><ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
 <li><a class="reference internal" href="#setup-directories-and-project-py">Setup Directories and <strong>project.py</strong></a></li>
-<li><a class="reference internal" href="#copy-logfiles-and-create-the-design-file">Copy logfiles and create the Design File</a></li>
 <li><a class="reference internal" href="#setup-experiment-file-dd-py">Setup Experiment File <strong>DD.py</strong></a></li>
-<li><a class="reference internal" href="#setup-subjects-txt">Setup subjects.txt</a></li>
 <li><a class="reference internal" href="#install-workflows">Install Workflows</a></li>
-<li><a class="reference internal" href="#prepare-images-data-in-the-data-directory">Prepare images data in the <em>data</em> directory</a><ul>
-<li><a class="reference internal" href="#option-1-downloading-images-with-fitz-xnatconvert-workflow">Option 1. Downloading images with Fitz xnatconvert workflow</a></li>
-<li><a class="reference internal" href="#option-2-downloading-images-with-arcget-py">Option 2. Downloading images with ArcGet.py</a></li>
+<li><a class="reference internal" href="#setup-subjects-txt">Setup <strong>subjects.txt</strong></a></li>
+<li><a class="reference internal" href="#prepare-images-in-the-data-directory">Prepare images in the <em>data</em> directory</a><ul>
+<li><a class="reference internal" href="#aside-cbscentral-tools">Aside: CBSCentral Tools</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#setup-workflow-options-parameters">Setup Workflow Options / Parameters</a></li>
+<li><a class="reference internal" href="#copy-logfiles-and-create-the-design-file">Copy logfiles and create the Design File</a></li>
 <li><a class="reference internal" href="#run-workflows">Run Workflows</a></li>
 <li><a class="reference internal" href="#bonus-alternative-models">Bonus: Alternative Models</a></li>
 </ul>
@@ -130,37 +131,47 @@
     <div class="col-md-12">
       
   <div class="section" id="tutorial">
-<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<span id="tutorial-nwlabs"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
 <p>The following instructions will help you get tutorial data, setup and run
 one subject from our tutorial experiment.</p>
 <ol class="arabic simple">
-<li><tt class="docutils literal"><span class="pre">fitz</span> <span class="pre">setup</span></tt> directories and paths.</li>
-<li>Copy logfiles and create design file.</li>
-<li>Setup <tt class="docutils literal"><span class="pre">experiment.py</span></tt> with experiment processing parameters.</li>
-<li>Tell fitz which subs to run with <tt class="docutils literal"><span class="pre">subjects.txt</span></tt></li>
-<li>Have fitz download the requested workflow with <tt class="docutils literal"><span class="pre">fitz</span> <span class="pre">install</span></tt></li>
-<li>Download and prepare prepare images. (with <tt class="docutils literal"><span class="pre">ArcGet.py</span></tt> and <tt class="docutils literal"><span class="pre">dcmstack</span></tt> or <tt class="docutils literal"><span class="pre">fitz</span> <span class="pre">run</span> <span class="pre">-w</span> <span class="pre">xnatrecon</span></tt>)</li>
-<li>Run workflows:  <tt class="docutils literal"><span class="pre">fitz</span> <span class="pre">run</span> <span class="pre">-w</span> <span class="pre">preproc</span> <span class="pre">onset</span> <span class="pre">model</span></tt></li>
+<li>Choose directories and paths in <strong>project.py</strong> with <code class="docutils literal"><span class="pre">fitz</span> <span class="pre">setup</span></code>.</li>
+<li>Specify experiment processing parameters in <strong>{experiment_name}.py</strong>.</li>
+<li>Download the requested workflow(s) with <code class="docutils literal"><span class="pre">fitz</span> <span class="pre">install</span></code></li>
+<li>Specify which subjects to run with <strong>subjects.txt</strong></li>
+<li>Download and prepare images. (<code class="docutils literal"><span class="pre">fitz</span> <span class="pre">run</span> <span class="pre">-w</span> <span class="pre">xnatrecon</span></code> or with <code class="docutils literal"><span class="pre">ArcGet.py</span></code> and <code class="docutils literal"><span class="pre">dcmstack</span></code>)</li>
+<li>Add preproc and common model options to <strong>{experiment_name}.py</strong></li>
+<li>Copy logfiles and create design file <strong>{experiment_name}-{model_name}.csv</strong>.</li>
+<li>Run workflows:  <code class="docutils literal"><span class="pre">fitz</span> <span class="pre">run</span> <span class="pre">-w</span> <span class="pre">preproc</span> <span class="pre">onset</span> <span class="pre">model</span></code></li>
 </ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In this tutorial, files to create are <strong>bold</strong>, important directories
+are <em>italicized</em>, and commands to run are <code class="docutils literal"><span class="pre">in</span> <span class="pre">monospace</span></code> or large
+code blocks.</p>
+</div>
 <div class="section" id="setup-directories-and-project-py">
 <h2>Setup Directories and <strong>project.py</strong><a class="headerlink" href="#setup-directories-and-project-py" title="Permalink to this headline">¶</a></h2>
 <p>There are 3 important directories in a standard project:</p>
-<ol class="arabic simple">
-<li><strong>fitz</strong> dir: Configuration files and some scripts.</li>
-<li><strong>data</strong> dir: Raw data and logfiles.</li>
-<li><strong>analysis</strong> dir: Outputs of the workflows and processed data.</li>
-</ol>
-<p>The first setup file to create is the <em>FITZ_DIR</em>/project.py, which lists the
-paths to each of these directories.</p>
-<p>First, create a directory for your project and a fitz dir (config dir) inside
-it, then run <tt class="docutils literal"><span class="pre">`fitz</span> <span class="pre">setup</span></tt> from the new <em>FITZ_DIR</em> directory.</p>
+<dl class="docutils">
+<dt>fitz dir</dt>
+<dd>Configuration files and some scripts.</dd>
+<dt>data dir</dt>
+<dd>Raw data and logfiles.</dd>
+<dt>analysis dir</dt>
+<dd>Outputs of the workflows and processed data.</dd>
+</dl>
+<p>To begin, create a directory for your project and a config directory inside it
+called &#8220;fitz&#8221; to hold configuration and any scripts you want to write. Then cd
+into it run <code class="docutils literal"><span class="pre">fitz</span> <span class="pre">setup</span></code>. Open a Terminal and type:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nb">cd</span> /ncf/jwb/studies/PrisonReward/Active/Analyses
 mkdir -p spmFMRI/fitz
 <span class="nb">cd </span>spmFMRI/fitz
 fitz setup
 </pre></div>
 </div>
-<p>Then answer questions or accept defaults:</p>
+<p>The script will ask questions to help you get started. You can just type enter
+after each one to accept the defaults:</p>
 <div class="highlight-python"><div class="highlight"><pre>Let&#39;s set up your project.
 
 Please enter values for the following settings (just press Enter to
@@ -182,119 +193,68 @@ configurations:</p>
 <div class="highlight-python"><div class="highlight"><pre>export FITZ_DIR=`pwd`
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">From here on out, the tutorial assumes you are running commands from
+the FITZ_DIR.</p>
 </div>
-<div class="section" id="copy-logfiles-and-create-the-design-file">
-<h2>Copy logfiles and create the Design File<a class="headerlink" href="#copy-logfiles-and-create-the-design-file" title="Permalink to this headline">¶</a></h2>
-<p>Create a plain-text &#8220;design file&#8221; in <cite>csv</cite> format for all runs containing
-columns for onset times, durations, conditions and parametric modulators.</p>
-<p>At a minium the design file should contain columns for &#8220;run&#8221;, &#8220;condition&#8221;, and
-&#8220;onset&#8221;; it may also have columns for duration and &#8220;pmod-&#8221; columns that will be
-entered as parametric modulators.</p>
-<p>An extremely simple design file would look like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">run</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">onset</span>
-<span class="mi">1</span><span class="p">,</span> <span class="n">sooner</span><span class="p">,</span> <span class="mi">0</span>
-<span class="mi">1</span><span class="p">,</span> <span class="n">sooner</span><span class="p">,</span> <span class="mi">12</span>
-<span class="mi">2</span><span class="p">,</span> <span class="n">sooner</span><span class="p">,</span> <span class="mi">0</span>
-<span class="mi">2</span><span class="p">,</span> <span class="n">later</span><span class="p">,</span> <span class="mi">12</span>
-</pre></div>
-</div>
-<p>For this DD task, we will map the following columns from the logfiles:</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="29%" />
-<col width="15%" />
-<col width="14%" />
-<col width="19%" />
-<col width="22%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">design column name</th>
-<th class="head">condition</th>
-<th class="head">onset</th>
-<th class="head">duration</th>
-<th class="head">pmod-ChoiceInt</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>logfile column name</td>
-<td>choice</td>
-<td>cuesTime</td>
-<td>trialResp.rt</td>
-<td>choiceInt</td>
-</tr>
-</tbody>
-</table>
-<div class="highlight-bash"><div class="highlight"><pre><span class="c"># Make folders for the logfiles and design files</span>
-mkdir logfiles design
-
-<span class="c"># Copy the logfiles for the tutorial subject to the data directory</span>
-cp /ncf/jwb/studies/PrisonReward/Active/Subject_Data/RSA_DD_Active/1819_2012_Aug_22_????.* logfiles/
-
-<span class="c"># Create the design files using the textOnsets2long script (or do it yourself)</span>
-textOnsets2long.py logfiles/*.csv --out design/DD-Model1.csv --condition-col choice --onset-col cuesTime --duration-col trialResp.rt --pmods-col choiceInt
-</pre></div>
-</div>
-<p>Waskom&#8217;s <a class="reference external" href="http://stanford.edu/~mwaskom/software/lyman/experiments.html#the-design-file">Lyman Documentation</a> also has more info on the design file.</p>
 </div>
 <div class="section" id="setup-experiment-file-dd-py">
 <h2>Setup Experiment File <strong>DD.py</strong><a class="headerlink" href="#setup-experiment-file-dd-py" title="Permalink to this headline">¶</a></h2>
-<p>Experiments are configured by creating a file called <tt class="docutils literal"><span class="pre">&lt;experiment_name&gt;.py</span></tt>.
+<p>Experiments are configured by creating a file called <code class="docutils literal"><span class="pre">{experiment_name}.py</span></code>.
 This is just a regular python file that defines options and variables used
 by the workflows.</p>
-<p>Change directories back to the <em>FITZ_DIR</em>, and use a text editor to edit the
-file <cite>DD.py</cite>.</p>
+<p>Use a text editor to edit the file <cite>DD.py</cite>. On linux, this might look like:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nb">cd</span> ../../fitz
 gedit DD.py
 </pre></div>
 </div>
-<p>Paste the following settings in to DD.py:</p>
+<p>Paste the following setting options into DD.py to tell fitz the name, version
+and path to the workflow you want this experiment to use:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Workflow Parameters</span>
 <span class="c"># --------------------</span>
 <span class="n">workflow_src</span> <span class="o">=</span> <span class="s">&quot;git@ncfgit.rc.fas.harvard.edu:kastman/nwlabs_fitz.git&quot;</span>
-<span class="n">workflow_version</span> <span class="o">=</span> <span class="s">&quot;0.0.1.dev&quot;</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="setup-subjects-txt">
-<h2>Setup subjects.txt<a class="headerlink" href="#setup-subjects-txt" title="Permalink to this headline">¶</a></h2>
-<p>A subjects.txt file in the fitz directory is used to list all the subjects
-that should be included. Since we&#8217;re only processing a single subject you can
-skip this step and use the &#8220;-r sub001&#8221; option, or create a text file with
-one line:</p>
-<div class="highlight-python"><div class="highlight"><pre>echo M87100094 &gt; subjects.txt
+<span class="n">workflow_version</span> <span class="o">=</span> <span class="s">&quot;0.0.1-dev&quot;</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="install-workflows">
 <h2>Install Workflows<a class="headerlink" href="#install-workflows" title="Permalink to this headline">¶</a></h2>
 <p>Install the workflows requested by the experiment file. This downloads the
-exact version of the workflow as specified and copies it into the scripts
-directory. You only have to do this once at the start (or any time that the
-workflow changes, which should ideally be never).</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="c">## TODO make sure fitz clones to the FITZ_DIR</span>
-<span class="c">##      and make sure that it reads pipelines there</span>
-
-fitz install
+exact version of the workflow as specified in {experiment}.py and copies it into
+the fitz directory. You only have to do this once at the start (or any time that
+the workflow changes, which should ideally be never).</p>
+<div class="highlight-bash"><div class="highlight"><pre>fitz install
 </pre></div>
 </div>
+<p><strong>TODO</strong> make fitz clone to the FITZ_DIR (instead of pwd) and make it read pipelines
+there (instead of the fitz install dir)</p>
 </div>
-<div class="section" id="prepare-images-data-in-the-data-directory">
-<h2>Prepare images data in the <em>data</em> directory<a class="headerlink" href="#prepare-images-data-in-the-data-directory" title="Permalink to this headline">¶</a></h2>
-<p>For this tutorial, you will download dicom data from the CBS Central xnat
-server.  We&#8217;re going to use one real subject from the PrisonReward study as an example.</p>
-<p>There are two options:</p>
-<ol class="arabic simple">
-<li>Use the xnatconvert workflow to download them through fitz.</li>
-</ol>
-<p>&#8211; or &#8211;</p>
-<ol class="arabic simple" start="2">
-<li>Use the CBSCentral tools to download the images directly.</li>
-</ol>
-<div class="section" id="option-1-downloading-images-with-fitz-xnatconvert-workflow">
-<h3>Option 1. Downloading images with Fitz xnatconvert workflow<a class="headerlink" href="#option-1-downloading-images-with-fitz-xnatconvert-workflow" title="Permalink to this headline">¶</a></h3>
-<p>Downloading the images is a relatively special case and belongs in the
-category of setting up raw data, so the special xnatconvert workflow puts
-its output in the data directory instead of the analysis directory.</p>
+<div class="section" id="setup-subjects-txt">
+<h2>Setup <strong>subjects.txt</strong><a class="headerlink" href="#setup-subjects-txt" title="Permalink to this headline">¶</a></h2>
+<p>A subjects.txt file in the fitz directory is used to list all the subjects
+that should be included. Since we&#8217;re only processing a single subject you can
+skip this step now and use the &#8220;-r sub001&#8221; option on the command line, or
+create a text file with one line:</p>
+<div class="highlight-python"><div class="highlight"><pre>echo M87100094 &gt; subjects.txt
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If desired, other groups of subjects may also be specified by creating
+<strong>subjects-{group_name}.txt</strong> files that may be used in
+<code class="docutils literal"><span class="pre">fitz</span> <span class="pre">run</span> <span class="pre">--group</span> <span class="pre">group_name</span></code>.</p>
+</div>
+</div>
+<div class="section" id="prepare-images-in-the-data-directory">
+<h2>Prepare images in the <em>data</em> directory<a class="headerlink" href="#prepare-images-in-the-data-directory" title="Permalink to this headline">¶</a></h2>
+<p>For this tutorial, you will download dicom data from the CBS Central <a class="reference external" href="http://www.xnat.org">xnat</a>
+server.  We&#8217;re going to use one real subject from the PrisonReward study as an
+example.</p>
+<p>Image download and conversion to nifti is a special type of workflow - the
+output files are put into <em>data</em>/{subject_id}/images directory instead of
+<em>analysis</em>, because the converted niftis are really more like inputs that
+processing steps.</p>
 <p>To configure the xnatconvert workflow to know which server to connect to,
 add the following lines to the experiment file DD.py:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Xnat Download and Convert</span>
@@ -309,24 +269,20 @@ add the following lines to the experiment file DD.py:</p>
 <div class="highlight-python"><div class="highlight"><pre>fitz run -w xnatconvert
 </pre></div>
 </div>
-</div>
-<div class="section" id="option-2-downloading-images-with-arcget-py">
-<h3>Option 2. Downloading images with ArcGet.py<a class="headerlink" href="#option-2-downloading-images-with-arcget-py" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="aside-cbscentral-tools">
+<h3>Aside: CBSCentral Tools<a class="headerlink" href="#aside-cbscentral-tools" title="Permalink to this headline">¶</a></h3>
 <p>If you just want to quickly grab data, and look at it, you can use ArcGet.py
 to download it and dicomstack to convert it to nifti format. This does the
 same thing as the fitz workflow, but is (for better or worse) a little more
 flexible.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nb">cd</span> ../data
-
-<span class="c"># Use ArcGet.py to download T1 &amp; BOLD dicoms from CBS Central</span>
+<div class="highlight-bash"><div class="highlight"><pre><span class="c"># Use ArcGet.py to download T1 &amp; BOLD dicoms from CBS Central</span>
 ArcGet.py -a cbscentral -s M87100094 -r MPRAGE,BOLD
 
-<span class="c"># Change to the subject directory and create a folder for the .nii images</span>
-<span class="nb">cd </span>M87100094
-mkdir images
+<span class="c"># Create a folder for the .nii images</span>
+mkdir ../data/M87100094/images
 
 <span class="c"># Use dcmstack to convert images from DICOM to Nifti format</span>
-dcmstack --embed-meta --dest-dir images --output-ext .nii RAW/
+dcmstack --embed-meta --dest-dir ../data/M87100094/images --output-ext .nii ../data/M87100094/RAW
 </pre></div>
 </div>
 </div>
@@ -363,17 +319,12 @@ and add any other preprocessing options.</p>
 <span class="n">bases</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;hrf&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;derivs&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]}}</span>
 <span class="n">estimation_method</span> <span class="o">=</span> <span class="s">&#39;Classical&#39;</span>
 <span class="n">input_units</span> <span class="o">=</span> <span class="n">output_units</span> <span class="o">=</span> <span class="s">&#39;secs&#39;</span>
-
-<span class="c">## TODO Move models to their own files and</span>
-<span class="c">##      inspect directory for them; no default file.</span>
-<span class="c">## How to have extra config files for different workflows?</span>
-<span class="c">## Just code that into the workflow of what to look for?</span>
 </pre></div>
 </div>
 <p>Models are defined in their own files, with the name of the experiment and the
 name of the model.</p>
 <p>Add the following options to a new file called DD-Model1.py:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">design_file</span> <span class="o">=</span> <span class="s">&#39;Model1.csv&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">design_file</span> <span class="o">=</span> <span class="s">&#39;DD-Model1.csv&#39;</span>
 <span class="n">contrasts</span> <span class="o">=</span> <span class="p">[</span>
   <span class="p">(</span><span class="s">&#39;all trials&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;sooner&#39;</span><span class="p">,</span> <span class="s">&#39;later&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>                <span class="c"># 1</span>
   <span class="p">(</span><span class="s">&#39;choice&#39;</span><span class="p">,</span>     <span class="p">[</span><span class="s">&#39;soonerxchoice^1&#39;</span><span class="p">,</span> <span class="s">&#39;laterxchoice^1&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span>  <span class="c"># 2</span>
@@ -381,27 +332,33 @@ name of the model.</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="run-workflows">
-<h2>Run Workflows<a class="headerlink" href="#run-workflows" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li>Prepoc workflow: performs slicetime correction, realignment,
-coregistration, normalization and smoothing.</li>
-<li>Onset workflow: Converts the design file to SPM <a href="#id1"><span class="problematic" id="id2">*</span></a>.mat multiple conditions
-files.</li>
-<li>Model: Calculates artifacts, specifies a model design and estimates the
-model and contrasts.</li>
-</ul>
-<div class="highlight-bash"><div class="highlight"><pre>fitz run -w onsets preproc model --model Model1
+<div class="section" id="copy-logfiles-and-create-the-design-file">
+<h2>Copy logfiles and create the Design File<a class="headerlink" href="#copy-logfiles-and-create-the-design-file" title="Permalink to this headline">¶</a></h2>
+<p>Create a plain-text &#8220;design file&#8221; in <cite>csv</cite> format for all runs containing
+columns for onset times, durations, conditions and parametric modulators.</p>
+<p>At a minium the design file should contain columns for &#8220;run&#8221;, &#8220;condition&#8221;, and
+&#8220;onset&#8221;; it may also have columns for duration and &#8220;pmod-&#8221; columns that will be
+entered as parametric modulators.</p>
+<p>An extremely simple design file would look like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">run</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">onset</span>
+<span class="mi">1</span><span class="p">,</span> <span class="n">sooner</span><span class="p">,</span> <span class="mi">0</span>
+<span class="mi">1</span><span class="p">,</span> <span class="n">sooner</span><span class="p">,</span> <span class="mi">12</span>
+<span class="mi">2</span><span class="p">,</span> <span class="n">sooner</span><span class="p">,</span> <span class="mi">0</span>
+<span class="mi">2</span><span class="p">,</span> <span class="n">later</span><span class="p">,</span> <span class="mi">12</span>
 </pre></div>
 </div>
-<p>N.B. There is no default model, so you must specify which one you want to use
-with the <tt class="docutils literal"><span class="pre">--model</span></tt> flag.</p>
-</div>
-<div class="section" id="bonus-alternative-models">
-<h2>Bonus: Alternative Models<a class="headerlink" href="#bonus-alternative-models" title="Permalink to this headline">¶</a></h2>
-<p>Exercise: Create a new design file with a differnet onset, and create a new
-model file called DD-Model2.py that uses it.</p>
-<table border="1" class="docutils">
+<p>For simple designs where most of what you want already exists in your logfiles,
+fitz includes a simple script called <code class="docutils literal"><span class="pre">textOnsets2Long.py</span></code> that will select
+and split up your full logfile into a &#8220;long&#8221; style csv with appropriate columns.
+This assumes that each row of your logfile is a trial, and that there are
+columns that list the trial type (condition), trial time (onset), and trial
+duration (this defaults to zero), and additional values to use for parametric
+modulators (i.e. which option a particpant chose, the value of their choice).</p>
+<p>To use it, specify which of the column names in your logfile hold map to the
+appropriate columns (condition, onset, duration, pmod) and list the logfiles.</p>
+<p>For this DD task, we will map the following columns from the logfiles and
+create a model file in <em>data</em>/{subject_id}/design/<strong>DD-Model1.py</strong>:</p>
+<table border="1" class="table-striped docutils">
 <colgroup>
 <col width="51%" />
 <col width="49%" />
@@ -423,6 +380,73 @@ model file called DD-Model2.py that uses it.</p>
 </tr>
 <tr class="row-odd"><td>choiceInt</td>
 <td>pmod-ChoiceInt</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-bash"><div class="highlight"><pre><span class="c"># Make folders for the logfiles and design files</span>
+mkdir ../data/M87100094/logfiles ../data/M87100094/design
+
+<span class="c"># Copy the logfiles for the tutorial subject to the data directory</span>
+cp /ncf/jwb/studies/PrisonReward/Active/Subject_Data/RSA_DD_Active/1819_2012_Aug_22_????.* ../data/M87100094/logfiles/
+
+<span class="c"># Create the design files using the textOnsets2long script (or do it yourself)</span>
+textOnsets2long.py ../data/M87100094/logfiles/*.csv --out ../data/M87100094/design/DD-Model1.csv --condition-col choice --onset-col cuesTime --duration-col trialResp.rt --pmods-col choiceInt
+</pre></div>
+</div>
+<p>Models may be as complicated (or simple) as you want, and you should feel free
+to create the csv yourself without the help of <code class="docutils literal"><span class="pre">textOnsets2long.py</span></code>.</p>
+<p>Waskom&#8217;s <a class="reference external" href="http://stanford.edu/~mwaskom/software/lyman/experiments.html#the-design-file">Lyman Documentation</a> also has more info on the design file and
+additional regressors file where post-convolved regressors for each TR may also
+be added to the model.</p>
+</div>
+<div class="section" id="run-workflows">
+<h2>Run Workflows<a class="headerlink" href="#run-workflows" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Preproc</dt>
+<dd>Performs slicetime correction, realignment, coregistration, normalization
+and smoothing.</dd>
+<dt>Onset</dt>
+<dd>Converts the design file to binary Matlab .mat SPM-style multiple conditions
+files.</dd>
+<dt>Model</dt>
+<dd>Calculates artifacts, specifies a model design and estimates the model
+and contrasts.</dd>
+</dl>
+<div class="highlight-bash"><div class="highlight"><pre>fitz run -w onsets preproc model --model Model1
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">N.B. There is no default model, so you must specify which one you
+want to use with the <code class="docutils literal"><span class="pre">--model</span></code> flag.</p>
+</div>
+</div>
+<div class="section" id="bonus-alternative-models">
+<h2>Bonus: Alternative Models<a class="headerlink" href="#bonus-alternative-models" title="Permalink to this headline">¶</a></h2>
+<p>Exercise: Create a new design file with a differnet onset, and create a new
+model file called DD-Model2.py that uses it.</p>
+<table border="1" class="table-striped docutils">
+<colgroup>
+<col width="29%" />
+<col width="15%" />
+<col width="14%" />
+<col width="19%" />
+<col width="22%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">design column name</th>
+<th class="head">condition</th>
+<th class="head">onset</th>
+<th class="head">duration</th>
+<th class="head">pmod-ChoiceInt</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>logfile column name</td>
+<td>choice</td>
+<td>cuesTime</td>
+<td>trialResp.rt</td>
+<td>choiceInt</td>
 </tr>
 </tbody>
 </table>
@@ -449,7 +473,7 @@ model file called DD-Model2.py that uses it.</p>
     </p>
     <p>
         &copy; Copyright 2015, Erik Kastman.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.<br/>
     </p>
   </div>
 </footer>
