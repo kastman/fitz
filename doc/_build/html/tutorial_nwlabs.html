@@ -86,11 +86,16 @@
       aria-labelledby="dLabelLocalToc"><ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
 <li><a class="reference internal" href="#setup-directories-and-project-py">Setup Directories and <strong>project.py</strong></a></li>
-<li><a class="reference internal" href="#prepare-images-data-in-the-data-directory">Prepare images data in the <em>data</em> directory</a></li>
 <li><a class="reference internal" href="#copy-logfiles-and-create-the-design-file">Copy logfiles and create the Design File</a></li>
 <li><a class="reference internal" href="#setup-experiment-file-dd-py">Setup Experiment File <strong>DD.py</strong></a></li>
 <li><a class="reference internal" href="#setup-subjects-txt">Setup subjects.txt</a></li>
 <li><a class="reference internal" href="#install-workflows">Install Workflows</a></li>
+<li><a class="reference internal" href="#prepare-images-data-in-the-data-directory">Prepare images data in the <em>data</em> directory</a><ul>
+<li><a class="reference internal" href="#option-1-downloading-images-with-fitz-xnatconvert-workflow">Option 1. Downloading images with Fitz xnatconvert workflow</a></li>
+<li><a class="reference internal" href="#option-2-downloading-images-with-arcget-py">Option 2. Downloading images with ArcGet.py</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#setup-workflow-options-parameters">Setup Workflow Options / Parameters</a></li>
 <li><a class="reference internal" href="#run-workflows">Run Workflows</a></li>
 <li><a class="reference internal" href="#bonus-alternative-models">Bonus: Alternative Models</a></li>
 </ul>
@@ -130,12 +135,12 @@
 one subject from our tutorial experiment.</p>
 <ol class="arabic simple">
 <li><tt class="docutils literal"><span class="pre">fitz</span> <span class="pre">setup</span></tt> directories and paths.</li>
-<li>Download and prepare prepare images with <tt class="docutils literal"><span class="pre">ArcGet.py</span></tt> and <tt class="docutils literal"><span class="pre">dcmstack</span></tt>.</li>
 <li>Copy logfiles and create design file.</li>
 <li>Setup <tt class="docutils literal"><span class="pre">experiment.py</span></tt> with experiment processing parameters.</li>
 <li>Tell fitz which subs to run with <tt class="docutils literal"><span class="pre">subjects.txt</span></tt></li>
 <li>Have fitz download the requested workflow with <tt class="docutils literal"><span class="pre">fitz</span> <span class="pre">install</span></tt></li>
-<li>Do all the things.  <tt class="docutils literal"><span class="pre">fitz</span> <span class="pre">run</span> <span class="pre">-w</span> <span class="pre">workflows</span></tt></li>
+<li>Download and prepare prepare images. (with <tt class="docutils literal"><span class="pre">ArcGet.py</span></tt> and <tt class="docutils literal"><span class="pre">dcmstack</span></tt> or <tt class="docutils literal"><span class="pre">fitz</span> <span class="pre">run</span> <span class="pre">-w</span> <span class="pre">xnatrecon</span></tt>)</li>
+<li>Run workflows:  <tt class="docutils literal"><span class="pre">fitz</span> <span class="pre">run</span> <span class="pre">-w</span> <span class="pre">preproc</span> <span class="pre">onset</span> <span class="pre">model</span></tt></li>
 </ol>
 <div class="section" id="setup-directories-and-project-py">
 <h2>Setup Directories and <strong>project.py</strong><a class="headerlink" href="#setup-directories-and-project-py" title="Permalink to this headline">¶</a></h2>
@@ -175,25 +180,6 @@ Please use relative paths.
 <p>Finally, set an environment variable to tell fitz where to look for
 configurations:</p>
 <div class="highlight-python"><div class="highlight"><pre>export FITZ_DIR=`pwd`
-</pre></div>
-</div>
-</div>
-<div class="section" id="prepare-images-data-in-the-data-directory">
-<h2>Prepare images data in the <em>data</em> directory<a class="headerlink" href="#prepare-images-data-in-the-data-directory" title="Permalink to this headline">¶</a></h2>
-<p>For this tutorial, you will download dicom data from the CBS Central xnat
-server.</p>
-<p>We&#8217;re going to use one real subject from the PrisonReward study as an example.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nb">cd</span> ../data
-
-<span class="c"># Use ArcGet.py to download T1 &amp; BOLD dicoms from CBS Central</span>
-ArcGet.py -a cbscentral -s M87100094 -r MPRAGE,BOLD
-
-<span class="c"># Change to the subject directory and create a folder for the .nii images</span>
-<span class="nb">cd </span>M87100094
-mkdir images
-
-<span class="c"># Use dcmstack to convert images from DICOM to Nifti format</span>
-dcmstack --embed-meta --dest-dir images --output-ext .nii RAW/
 </pre></div>
 </div>
 </div>
@@ -266,41 +252,6 @@ gedit DD.py
 <span class="c"># --------------------</span>
 <span class="n">workflow_src</span> <span class="o">=</span> <span class="s">&quot;git@ncfgit.rc.fas.harvard.edu:kastman/nwlabs_fitz.git&quot;</span>
 <span class="n">workflow_version</span> <span class="o">=</span> <span class="s">&quot;0.0.1.dev&quot;</span>
-
-<span class="c"># Xnat Download and Convert</span>
-<span class="n">struct_offset</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">func_offset</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">xnat_project</span> <span class="o">=</span> <span class="s">&#39;Buckholtz RSA&#39;</span>
-<span class="n">struct_pattern</span> <span class="o">=</span> <span class="s">&#39;mprage%RMS&#39;</span>
-<span class="n">func_pattern</span> <span class="o">=</span> <span class="s">&#39;ddt%&#39;</span>
-<span class="n">server</span> <span class="o">=</span> <span class="s">&#39;https://cbscentral.rc.fas.harvard.edu&#39;</span>
-
-<span class="c"># Preproc Parameters</span>
-<span class="c"># -------------------</span>
-<span class="n">func_template</span> <span class="o">=</span> <span class="s">&quot;{subject_id}/images/*dd*&quot;</span>
-<span class="n">anat_template</span> <span class="o">=</span> <span class="s">&quot;{subject_id}/images/*mprage*&quot;</span>
-
-<span class="n">n_runs</span> <span class="o">=</span> <span class="mi">3</span>
-<span class="n">TR</span> <span class="o">=</span> <span class="mf">2.5</span>
-<span class="n">temporal_interp</span> <span class="o">=</span> <span class="bp">True</span>
-<span class="n">interleaved</span> <span class="o">=</span> <span class="bp">False</span>
-<span class="n">slice_order</span> <span class="o">=</span> <span class="s">&#39;up&#39;</span>
-<span class="n">num_slices</span> <span class="o">=</span> <span class="mi">33</span>
-<span class="n">smooth_fwhm</span> <span class="o">=</span> <span class="mi">6</span>
-<span class="n">hpcutoff</span> <span class="o">=</span> <span class="mi">120</span>
-<span class="n">frames_to_toss</span> <span class="o">=</span> <span class="mi">0</span>
-
-<span class="n">bases</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;hrf&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;derivs&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]}}</span>
-<span class="n">estimation_method</span> <span class="o">=</span> <span class="s">&#39;Classical&#39;</span>
-
-<span class="c"># Default Model Parameters</span>
-<span class="c"># -------------------------</span>
-<span class="n">design_name</span> <span class="o">=</span> <span class="s">&#39;DD-Model1&#39;</span>
-<span class="n">input_units</span> <span class="o">=</span> <span class="n">output_units</span> <span class="o">=</span> <span class="s">&#39;secs&#39;</span>
-<span class="n">contrasts</span> <span class="o">=</span> <span class="p">[</span>
-  <span class="p">(</span><span class="s">&#39;all trials&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;sooner&#39;</span><span class="p">,</span> <span class="s">&#39;later&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>                <span class="c"># 1</span>
-  <span class="p">(</span><span class="s">&#39;choice&#39;</span><span class="p">,</span>     <span class="p">[</span><span class="s">&#39;soonerxchoice^1&#39;</span><span class="p">,</span> <span class="s">&#39;laterxchoice^1&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span>  <span class="c"># 2</span>
-<span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -320,21 +271,136 @@ one line:</p>
 exact version of the workflow as specified and copies it into the scripts
 directory. You only have to do this once at the start (or any time that the
 workflow changes, which should ideally be never).</p>
-<div class="highlight-bash"><div class="highlight"><pre>fitz install
+<div class="highlight-bash"><div class="highlight"><pre><span class="c">## TODO make sure fitz clones to the FITZ_DIR</span>
+<span class="c">##      and make sure that it reads pipelines there</span>
+
+fitz install
+</pre></div>
+</div>
+</div>
+<div class="section" id="prepare-images-data-in-the-data-directory">
+<h2>Prepare images data in the <em>data</em> directory<a class="headerlink" href="#prepare-images-data-in-the-data-directory" title="Permalink to this headline">¶</a></h2>
+<p>For this tutorial, you will download dicom data from the CBS Central xnat
+server.  We&#8217;re going to use one real subject from the PrisonReward study as an example.</p>
+<p>There are two options:</p>
+<ol class="arabic simple">
+<li>Use the xnatconvert workflow to download them through fitz.</li>
+</ol>
+<p>&#8211; or &#8211;</p>
+<ol class="arabic simple" start="2">
+<li>Use the CBSCentral tools to download the images directly.</li>
+</ol>
+<div class="section" id="option-1-downloading-images-with-fitz-xnatconvert-workflow">
+<h3>Option 1. Downloading images with Fitz xnatconvert workflow<a class="headerlink" href="#option-1-downloading-images-with-fitz-xnatconvert-workflow" title="Permalink to this headline">¶</a></h3>
+<p>Downloading the images is a relatively special case and belongs in the
+category of setting up raw data, so the special xnatconvert workflow puts
+its output in the data directory instead of the analysis directory.</p>
+<p>To configure the xnatconvert workflow to know which server to connect to,
+add the following lines to the experiment file DD.py:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Xnat Download and Convert</span>
+<span class="c"># --------------------------</span>
+<span class="n">xnat_project</span> <span class="o">=</span> <span class="s">&#39;Buckholtz_RSA&#39;</span>
+<span class="n">struct_pattern</span> <span class="o">=</span> <span class="s">&#39;mprage%RMS&#39;</span>
+<span class="n">func_pattern</span> <span class="o">=</span> <span class="s">&#39;ddt%&#39;</span>
+<span class="n">server</span> <span class="o">=</span> <span class="s">&#39;https://cbscentral.rc.fas.harvard.edu&#39;</span>
+</pre></div>
+</div>
+<p><strong>Don&#8217;t forget this!</strong> Run the fitz workflow to download data:</p>
+<div class="highlight-python"><div class="highlight"><pre>fitz run -w xnatconvert
+</pre></div>
+</div>
+</div>
+<div class="section" id="option-2-downloading-images-with-arcget-py">
+<h3>Option 2. Downloading images with ArcGet.py<a class="headerlink" href="#option-2-downloading-images-with-arcget-py" title="Permalink to this headline">¶</a></h3>
+<p>If you just want to quickly grab data, and look at it, you can use ArcGet.py
+to download it and dicomstack to convert it to nifti format. This does the
+same thing as the fitz workflow, but is (for better or worse) a little more
+flexible.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nb">cd</span> ../data
+
+<span class="c"># Use ArcGet.py to download T1 &amp; BOLD dicoms from CBS Central</span>
+ArcGet.py -a cbscentral -s M87100094 -r MPRAGE,BOLD
+
+<span class="c"># Change to the subject directory and create a folder for the .nii images</span>
+<span class="nb">cd </span>M87100094
+mkdir images
+
+<span class="c"># Use dcmstack to convert images from DICOM to Nifti format</span>
+dcmstack --embed-meta --dest-dir images --output-ext .nii RAW/
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="setup-workflow-options-parameters">
+<h2>Setup Workflow Options / Parameters<a class="headerlink" href="#setup-workflow-options-parameters" title="Permalink to this headline">¶</a></h2>
+<p>Next, configure the pattern for choosing functional and structural images,
+and add any other preprocessing options.</p>
+<p>Add these config variables to your DD.py experiment file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Preproc Parameters</span>
+<span class="c"># -------------------</span>
+
+<span class="n">func_template</span> <span class="o">=</span> <span class="s">&quot;{subject_id}/images/*dd*&quot;</span>
+<span class="n">anat_template</span> <span class="o">=</span> <span class="s">&quot;{subject_id}/images/*mprage*&quot;</span>
+
+<span class="c">## TODO Add sanity check that ensures these are true</span>
+
+<span class="c">## TODO Add motion_correct = True</span>
+<span class="c">## TODO Print default options</span>
+
+<span class="n">n_runs</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">TR</span> <span class="o">=</span> <span class="mf">2.5</span>
+<span class="n">temporal_interp</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">interleaved</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="n">slice_order</span> <span class="o">=</span> <span class="s">&#39;up&#39;</span>
+<span class="n">num_slices</span> <span class="o">=</span> <span class="mi">33</span>
+<span class="n">smooth_fwhm</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="n">hpcutoff</span> <span class="o">=</span> <span class="mi">120</span>
+<span class="n">frames_to_toss</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="c"># Default Model Parameters</span>
+<span class="c"># -------------------------</span>
+
+<span class="n">bases</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;hrf&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;derivs&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]}}</span>
+<span class="n">estimation_method</span> <span class="o">=</span> <span class="s">&#39;Classical&#39;</span>
+<span class="n">input_units</span> <span class="o">=</span> <span class="n">output_units</span> <span class="o">=</span> <span class="s">&#39;secs&#39;</span>
+
+<span class="c">## TODO Move models to their own files and</span>
+<span class="c">##      inspect directory for them; no default file.</span>
+<span class="c">## How to have extra config files for different workflows?</span>
+<span class="c">## Just code that into the workflow of what to look for?</span>
+</pre></div>
+</div>
+<p>Models are defined in their own files, with the name of the experiment and the
+name of the model.</p>
+<p>Add the following options to a new file called DD-Model1.py:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">design_file</span> <span class="o">=</span> <span class="s">&#39;Model1.csv&#39;</span>
+<span class="n">contrasts</span> <span class="o">=</span> <span class="p">[</span>
+  <span class="p">(</span><span class="s">&#39;all trials&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;sooner&#39;</span><span class="p">,</span> <span class="s">&#39;later&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>                <span class="c"># 1</span>
+  <span class="p">(</span><span class="s">&#39;choice&#39;</span><span class="p">,</span>     <span class="p">[</span><span class="s">&#39;soonerxchoice^1&#39;</span><span class="p">,</span> <span class="s">&#39;laterxchoice^1&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span>  <span class="c"># 2</span>
+<span class="p">]</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="run-workflows">
 <h2>Run Workflows<a class="headerlink" href="#run-workflows" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-bash"><div class="highlight"><pre>fitz run -w onsets preproc model
+<ul class="simple">
+<li>Prepoc workflow: performs slicetime correction, realignment,
+coregistration, normalization and smoothing.</li>
+<li>Onset workflow: Converts the design file to SPM <a href="#id1"><span class="problematic" id="id2">*</span></a>.mat multiple conditions
+files.</li>
+<li>Model: Calculates artifacts, specifies a model design and estimates the
+model and contrasts.</li>
+</ul>
+<div class="highlight-bash"><div class="highlight"><pre>fitz run -w onsets preproc model --model Model1
 </pre></div>
 </div>
+<p>N.B. There is no default model, so you must specify which one you want to use
+with the <tt class="docutils literal"><span class="pre">--model</span></tt> flag.</p>
 </div>
 <div class="section" id="bonus-alternative-models">
 <h2>Bonus: Alternative Models<a class="headerlink" href="#bonus-alternative-models" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-bash"><div class="highlight"><pre>cp DD.py DD-Model2.py
-</pre></div>
-</div>
+<p>Exercise: Create a new design file with a differnet onset, and create a new
+model file called DD-Model2.py that uses it.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="51%" />
