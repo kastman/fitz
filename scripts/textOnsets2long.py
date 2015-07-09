@@ -6,47 +6,21 @@
 from __future__ import print_function
 from pandas import concat, read_csv
 from argparse import ArgumentParser, FileType
-import re
-from scipy.io import savemat
 from numpy import empty
 
 
 def main(args):
     runs_df = load_onsets(args.onsets_files, args)
 
-    if len(args.conditions):
-        conditions = args.conditions
-    else:
-        conditions = runs_df['condition'].unique()
-
-    print(runs_df)
-
     runs_df.to_csv(args.out, index=False)
 
     exit()
-
-    # for r, run_df in runs_df.groupby('run'):
-    #     if args.verbose >= 1:
-    #         print(r, run_df)
-    #     infolist = []
-    #     for cond in conditions:
-    #         onsets = onsets_for(cond, run_df)
-    #         if onsets:  # Don't append 0-length onsets
-    #             infolist.append(onsets)
-    #     if args.verbose >= 2:
-    #         print(infolist)
-    #
-    #     outfile = args.prefix + 'run%d.mat' % int(r)
-    #     scipy_onsets = _lists_to_scipy(infolist)
-    #     savemat(outfile, scipy_onsets, oned_as='row')
-    #     print('Saved %s' % outfile)
 
 
 def load_onsets(onsets_files, args):
     """Read onsets file and add metadata from their filenames.
     Return one concatenated pandas dataframe with all trials as rows."""
     runs = []
-    # pat = re.compile('(?P<condition>\w+)\.run(?P<run>\d{3})')
     for i, fid in enumerate(onsets_files):
         cols = ['run', 'onset', 'duration', 'condition']
 
@@ -58,11 +32,6 @@ def load_onsets(onsets_files, args):
                 if col in run.columns:
                     run.drop(col, axis=1, inplace=True)
 
-        # run = read_table(fid, names=['onset', 'duration', 'amplitude'])
-
-        # runinfo = pat.search(fid.name).groupdict()
-        # print(run)
-        # print(run.columns)
         run['filename'] = fid.name
 
         columns = {}
@@ -124,7 +93,8 @@ def onsets_for(cond, run_df):
             onsets=cond_df['onset'].tolist(),
         )
 
-        if 'amplitude' in cond_df.columns and cond_df['amplitude'].notnull().any():
+        if ('amplitude' in cond_df.columns and
+                cond_df['amplitude'].notnull().any()):
             pmods = [dict(
                 name=args.pmod_name,
                 poly=1,
@@ -178,12 +148,12 @@ def _lists_to_scipy(onsets_list):
             current_condition_n_pmods = len(cond_pmod_list)
             pmod_names = empty((current_condition_n_pmods,), dtype='object')
             pmod_param = empty((current_condition_n_pmods,), dtype='object')
-            pmod_poly  = empty((current_condition_n_pmods,), dtype='object')
+            pmod_poly = empty((current_condition_n_pmods,), dtype='object')
 
             for pmod_i, val in enumerate(cond_pmod_list):
                 pmod_names[pmod_i] = val['name']
                 pmod_param[pmod_i] = val['param']
-                pmod_poly[pmod_i]  = float(val['poly'])
+                pmod_poly[pmod_i] = float(val['poly'])
 
             pmods[i]['name'] = pmod_names
             pmods[i]['poly'] = pmod_poly
