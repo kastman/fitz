@@ -144,7 +144,7 @@ def run_parser(subparsers):
     parser.description = help
     parser.formatter_class = RawDescriptionHelpFormatter
     parser.add_argument("--experiment", "-e", help="experimental paradigm")
-    parser.add_argument("--altmodel", "-a", help="alternate model to fit")
+    parser.add_argument("--model", "-m", help="model to fit")
     parser.add_argument("--workflows", "-w", nargs="*",
                         choices=["xnatconvert", "preproc", "onset", "model"],
                         help="which workflows to run")

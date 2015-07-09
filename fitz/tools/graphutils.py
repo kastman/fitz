@@ -42,7 +42,8 @@ class OutputWrapper(object):
         self.sink_node = sink_node
         self.out_node = output_node
 
-    def set_mapnode_substitutions(self, n_runs):
+    def set_mapnode_substitutions(self, n_runs, template_pattern="run_%d",
+                                  template_args="r + 1"):
         """Find mapnode names and add datasink substitutions to sort by run."""
 
         # First determine top-level mapnode names
@@ -57,8 +58,10 @@ class OutputWrapper(object):
         # Build a list of substitution tuples
         substitutions = []
         for r in reversed(range(n_runs)):
+            templ_args = eval('(%s)' % template_args)
             for name in mapnode_names:
-                substitutions.append(("_%s%d" % (name, r), "run_%d" % (r + 1)))
+                substitutions.append(("_%s%d" % (name, r),
+                                      template_pattern % templ_args))
 
         # Set the substitutions attribute on the DataSink node
         if isdefined(self.sink_node.inputs.substitutions):

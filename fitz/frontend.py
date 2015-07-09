@@ -33,7 +33,7 @@ def gather_project_info():
     return project_dict
 
 
-def gather_experiment_info(exp_name=None, altmodel=None):
+def gather_experiment_info(exp_name=None, model=None):
     """Import an experiment module and add some formatted information."""
     fitz_dir = os.environ["FITZ_DIR"]
 
@@ -57,22 +57,22 @@ def gather_experiment_info(exp_name=None, altmodel=None):
     exp_dict.update({k: v for k, v in exp.__dict__.items() if keep(k)})
 
     # Possibly import the alternate model details
-    if altmodel is not None:
+    if model is not None:
         try:
-            alt = sys.modules[altmodel]
+            mod = sys.modules[model]
         except KeyError:
-            alt_file = op.join(fitz_dir, "%s-%s.py" % (exp_name, altmodel))
-            alt = imp.load_source(altmodel, alt_file)
+            model_file = op.join(fitz_dir, "%s-%s.py" % (exp_name, model))
+            mod = imp.load_source(model, model_file)
 
-        alt_dict = {k: v for k, v in alt.__dict__.items() if keep(k)}
+        mod_dict = {k: v for k, v in mod.__dict__.items() if keep(k)}
 
         # Update the base information with the altmodel info
-        exp_dict.update(alt_dict)
+        exp_dict.update(mod_dict)
 
     # Save the __doc__ attribute to the dict
     exp_dict["comments"] = "" if exp.__doc__ is None else exp.__doc__
-    if altmodel is not None:
-        exp_dict["comments"] += "" if alt.__doc__ is None else alt.__doc__
+    if model is not None:
+        exp_dict["comments"] += "" if mod.__doc__ is None else mod.__doc__
 
     # Check if it looks like this is a partial FOV acquisition
     exp_dict["partial_brain"] = bool(exp_dict.get("whole_brain_template"))

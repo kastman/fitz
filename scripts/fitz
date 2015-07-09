@@ -26,7 +26,7 @@ def main(arglist):
 def run(args):
     """Get and process specific information"""
     project = fitz.gather_project_info()
-    exp = fitz.gather_experiment_info(args.experiment, args.altmodel)
+    exp = fitz.gather_experiment_info(args.experiment, args.model)
 
     # Subject is always highest level of parameterization
     subject_list = fitz.determine_subjects(args.subjects)
@@ -39,8 +39,8 @@ def run(args):
         exp_name = args.experiment
 
     exp_base = exp_name
-    if args.altmodel is not None:
-        exp_name = "-".join([exp_base, args.altmodel])
+    if args.model is not None:
+        exp_name = "-".join([exp_base, args.model])
 
     # Set roots of output storage
     project['analysis_dir'] = op.join(project["analysis_dir"], exp_name)
@@ -55,7 +55,9 @@ def run(args):
 
     if 'xnatconvert' in args.workflows:
         import fitz.pipes.workflows.xnatconvert as f_xnatconvert
-        xnatconvert = f_xnatconvert.workflow(project, exp, args, subj_source)
+        params = f_xnatconvert.default_parameters
+        params.update(exp)
+        xnatconvert = f_xnatconvert.workflow(project, params, args, subj_source)
         fitz.run_workflow(xnatconvert, "xnatconvert", args)
 
     if 'preproc' in args.workflows:
