@@ -3,8 +3,8 @@
 Tutorial
 =========
 
-The following instructions will help you get tutorial data, setup and run
-one subject from our tutorial experiment.
+The following instructions will help you access images and logfiles from our
+tutorial data, and configure and run our basic fMRI processing and modelling.
 
 1. Choose directories and paths in **project.py** with ``fitz setup``.
 

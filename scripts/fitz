@@ -3,16 +3,15 @@
 Main execution script for fMRI analysis in the ecosystem.
 
 """
-print 'Fitz: Version 0.0.1dev'
-
 import os
 import sys
 import argparse
 import fitz
 import os.path as op
 from nipype import config
-import setup_project
 import subprocess
+
+print 'Fitz: Version 0.0.1dev'
 
 
 def main(arglist):
@@ -57,7 +56,8 @@ def run(args):
         import fitz.pipes.workflows.xnatconvert as f_xnatconvert
         params = f_xnatconvert.default_parameters
         params.update(exp)
-        xnatconvert = f_xnatconvert.workflow(project, params, args, subj_source)
+        xnatconvert = f_xnatconvert.workflow(
+            project, params, args, subj_source)
         fitz.run_workflow(xnatconvert, "xnatconvert", args)
 
     if 'preproc' in args.workflows:
@@ -91,15 +91,16 @@ def setup_dirs(analysis_dir, exp_base, exp_name, subject_list):
                 preproc_dir = op.join("../..", exp_base, subj, "preproc")
                 os.symlink(preproc_dir, link_dir)
 
+
 def install(args):
     project = fitz.gather_project_info()
     exp = fitz.gather_experiment_info(project['default_exp'])
 
-    cmd =['git', 'clone', exp['workflow_src']]
+    cmd = ['git', 'clone', exp['workflow_src']]
     print ' '.join(cmd)
     subprocess.check_call(cmd)
 
-    cmd =['git', 'checkout', exp['workflow_version']]
+    cmd = ['git', 'checkout', exp['workflow_version']]
     print ' '.join(cmd)
     # subprocess.check_call(cmd)
 
