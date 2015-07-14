@@ -37,5 +37,3 @@ args
 subj_source
   A nipype node containing the IdentityInterface iterable for subjects, with
   the subject label stored as the output {subject_id}.
-
-A

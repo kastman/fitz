@@ -18,9 +18,11 @@ tutorial data, and configure and run our basic fMRI processing and modelling.
 
 6. Add preproc and common model options to **{experiment_name}.py**
 
-7. Copy logfiles and create design file **{experiment_name}-{model_name}.csv**.
+7. Copy logfiles and create design file
 
-8. Run workflows:  ``fitz run -w preproc onset model``
+8. Create model file **{experiment_name}-{model_name}.csv**
+
+9. Run workflows:  ``fitz run -w preproc onset model``
 
 .. note:: In this tutorial, files to create are **bold**, important directories
           are *italicized*, and commands to run are ``in monospace`` or large
@@ -40,9 +42,12 @@ data dir
 analysis dir
   Outputs of the workflows and processed data.
 
-To begin, create a directory for your project and a config directory inside it
-called "fitz" to hold configuration and any scripts you want to write. Then cd
-into it run ``fitz setup``. Open a Terminal and type:
+To begin, create a directory for your project/study, and a config directory
+inside it called "fitz"; this will hold configuration and any scripts you want
+to write. You can create both of these at once by typing
+``mkdir -p <study>/fitz``. Finally, cd into it run ``fitz setup`` to answer
+some questions about where you want your studie's processing directories to
+live. Open a Terminal and type:
 
 .. code-block:: bash
 
@@ -70,9 +75,9 @@ after each one to accept the defaults::
     > Remove working directory after execution? (Y/n) [y]:
 
 Finally, set an environment variable to tell fitz where to look for
-configurations::
+project.py, <study>.py, etc...::
 
-    export FITZ_DIR=`pwd`
+    export FITZ_DIR=<path/to/study/fitz>
 
 .. note:: From here on out, the tutorial assumes you are running commands from
           the FITZ_DIR.
@@ -85,12 +90,15 @@ Experiments are configured by creating a file called ``{experiment_name}.py``.
 This is just a regular python file that defines options and variables used
 by the workflows.
 
-Use a text editor to edit the file `DD.py`. On linux, this might look like:
+Use a text editor to edit the file `DD.py`.
 
 .. code-block:: bash
 
-    cd ../../fitz
-    gedit DD.py
+    # On linux, this might look like:
+    gedit DD.py  # linux
+
+    # Or on a mac
+    open -a TextEdit DD.py  # Mac
 
 Paste the following setting options into DD.py to tell fitz the name, version
 and path to the workflow you want this experiment to use:
@@ -127,12 +135,15 @@ that should be included. Since we're only processing a single subject you can
 skip this step now and use the "-r sub001" option on the command line, or
 create a text file with one line::
 
-    echo M87100094 > subjects.txt
+    M87100094
 
 .. note:: If desired, other groups of subjects may also be specified by creating
           **subjects-{group_name}.txt** files that may be used in
           ``fitz run --group group_name``.
 
+Note that when downloading from CBS Central, the subject id must be *exactly*
+the same as the "MR Session" id for the download to work correctly. I hope to
+fix this, but for the time being use the MR Session as your subject identifier.
 
 Prepare images in the *data* directory
 --------------------------------------------
@@ -156,19 +167,41 @@ add the following lines to the experiment file DD.py::
     func_pattern = 'ddt%'
     server = 'https://cbscentral.rc.fas.harvard.edu'
 
-**Don't forget this!** Run the fitz workflow to download data::
+If you're working on your own study, you'll need to change and specify these
+so that the patterns match up. The xnat_project is found on the main project
+page next to "ID:".
+
+.. image:: _static/images/XnatProject.png
+
+The struct and func patterns search the "Series Description" of each image to
+find datasets to download. In the example above, the struct pattern matches the
+scan with a description of "mprage_3e_15 RMS" (this is the root mean square
+anatomical T1) and the task matches "ddt" - the Delay Discounting Task.
+
+.. image:: _static/images/XnatPatterns.png
+
+This is a database-style search so you use '%' for a wildcard instead of '*'.
+
+You can now run the fitz workflow to download data::
 
     fitz run -w xnatconvert
 
-Aside: CBSCentral Tools
-~~~~~~~~~~~~~~~~~~~~~~~~
+Note that if you get a "No Images were downloaded" error you probably set up
+either the project's ID or the patterns incorrectly.
 
-If you just want to quickly grab data, and look at it, you can use ArcGet.py
-to download it and dicomstack to convert it to nifti format. This does the
-same thing as the fitz workflow, but is (for better or worse) a little more
-flexible.
+Aside: CBSCentral NRG Tools
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you just want to quickly grab data and are using the Harvard
+`Neuroinformatics Research Group`_ (NRG) xnat instances *CBSCentral* or
+*GSPCentral*, you can use ArcGet.py to download it and dicomstack to convert it
+to nifti format. This does the same thing as the fitz xnatconvert workflow, but
+is (for better or worse) a little more flexible.
 
 .. code-block:: bash
+
+    # Change to the data directory
+    cd ../data
 
     # Use ArcGet.py to download T1 & BOLD dicoms from CBS Central
     ArcGet.py -a cbscentral -s M87100094 -r MPRAGE,BOLD
@@ -179,9 +212,14 @@ flexible.
     # Use dcmstack to convert images from DICOM to Nifti format
     dcmstack --embed-meta --dest-dir ../data/M87100094/images --output-ext .nii ../data/M87100094/RAW
 
+    # don't forget to change back to the fitz directory when you're done
+    cd ../fitz
 
-Setup Workflow Options / Parameters
-------------------------------------
+.. note:: ArcGet.py is currently setup & available only on ncfnx / ncf
+          workstations, not the Buckerville MacPro or laptops.
+
+Setup Workflow Preprocessing Options
+-------------------------------------
 
 Next, configure the pattern for choosing functional and structural images,
 and add any other preprocessing options.
@@ -218,28 +256,57 @@ Add these config variables to your DD.py experiment file:
     estimation_method = 'Classical'
     input_units = output_units = 'secs'
 
-Models are defined in their own files, with the name of the experiment and the
-name of the model.
+The func_template and struct_template must be set, even if options
+for func_pattern and struct_pattern were set already for xnat_convert. This is
+because the xnat_convert is not the only way to convert nifti files, and the
+preproc workflow doesn't "know" about the xnat_convert workflow. It's important
+to be able to set them separately, but I might add an option to compbine them
+in a future release.
 
-Add the following options to a new file called DD-Model1.py:
+These "template" options are used to grab nifti images from the data
+directory depending on how the file names were created - usually using the
+series description from the dicom header. Check out your data directory to
+look at the images and make sure you're grabbing the right ones.
 
-.. code-block:: python
+TR is the Repetition Time, which should be specified in seconds (it is often
+shown in scan parameter sheets in ms). The number of slices can be found on
+the parameter sheet or by looking at the functional images with tools to view
+the nifti header (``fslhd``, ``3dinfo``, or ``SPM --> Display Image``).
 
-    design_file = 'DD-Model1.csv'
-    contrasts = [
-      ('all trials', ['sooner', 'later'], [1, 1]),                # 1
-      ('choice',     ['soonerxchoice^1', 'laterxchoice^1'], [1])  # 2
-    ]
+One additional caveat is that slice timing can be confusing - the scan parameter
+sheets from our Siemans scanner always list a *Multi-slice mode* of
+"Interleaved", even when slices are acquired sequentially. The correct value to
+look at is the *Series* value directly below it, which will either be
+"interleaved", "ascending" or "descending". Finally to completely convince
+yourself, you can look at the Siemans DICOM header field
+*CsaImage.MosaicRefAcqTimes* to see slice acquisition times.  Lots more helpful
+info is at `Harvard CBS FAQ slice info`_.
+
+Finally, set some default options for modeling. In this case we will use SPM
+defaults for the hemodynamic response functions ('hrf') in our general linear
+model, and will specify the unit for our design files will be in seconds (as
+opposed to TRs).
+
 
 Copy logfiles and create the Design File
 -----------------------------------------
 
-Create a plain-text "design file" in `csv` format for all runs containing
-columns for onset times, durations, conditions and parametric modulators.
+You have to create a plain-text "design file" in ``csv`` format that specifies
+the condition and onset time of stimuli as they were shown during the scan.
+This file should live at ``<data_dir>/<subject_id>/design/<design_name>.csv``
+and should have columns for onset times, durations, conditions and parametric
+modulators to use for your fMRI models. Each row in this file corresponds to an
+event, where the term “event” is used broadly and can mean a “block” in a block
+design experiment.
 
-At a minium the design file should contain columns for "run", "condition", and
+At a minimum the design file should contain columns for "run", "condition", and
 "onset"; it may also have columns for duration and "pmod-" columns that will be
-entered as parametric modulators.
+entered as parametric modulators. Note that the 'pmod-' columns correspond
+*roughly* to 'value' columns in a standard lyman design file, but are not the
+same thing. See `Mumford, Poline and Poldrack 2015`_ for a discussion on
+how parametric regressors and orthogonalization are handled between different
+fMRI packages. (TL;DR, Fitz enters these columns as pmods in SPM, while
+Lyman enters values as amplitudes.)
 
 An extremely simple design file would look like::
 
@@ -251,24 +318,30 @@ An extremely simple design file would look like::
 
 For simple designs where most of what you want already exists in your logfiles,
 fitz includes a simple script called ``textOnsets2Long.py`` that will select
-and split up your full logfile into a "long" style csv with appropriate columns.
-This assumes that each row of your logfile is a trial, and that there are
-columns that list the trial type (condition), trial time (onset), and trial
+and split up your full logfile into a "long" style csv with appropriate
+columns. This assumes that each row of your logfile is a trial, and that there
+are columns that list the trial type (condition), trial time (onset), and trial
 duration (this defaults to zero), and additional values to use for parametric
 modulators (i.e. which option a particpant chose, the value of their choice).
 
-To use it, specify which of the column names in your logfile hold map to the
+*If your logfiles don't have appropriate columns already, you won't be able to
+use the script helper and will have to make your own design files, or create new
+logfiles that include these columns.*
+
+To use it, specify which of the column names in your logfile map to the
 appropriate columns (condition, onset, duration, pmod) and list the logfiles.
+Make sure that your logfiles sort correctly when you list them with ``ls``,
+because the run column will be added based on the filenames' alphabetical order.
 
 For this DD task, we will map the following columns from the logfiles and
-create a model file in *data*/{subject_id}/design/**DD-Model1.py**:
+create a model file in *data*/{subject_id}/design/**DD-1.1.Choice.py**:
 
 .. cssclass:: table-striped
 
   +---------------------+--------------------+
   | logfile column name | design column name |
   +=====================+====================+
-  | immediacy           | condition          |
+  | choice              | condition          |
   +---------------------+--------------------+
   | cuesTime            | onset              |
   +---------------------+--------------------+
@@ -295,6 +368,27 @@ Waskom's `Lyman Documentation`_ also has more info on the design file and
 additional regressors file where post-convolved regressors for each TR may also
 be added to the model.
 
+Model Options (Design File and Contrasts)
+------------------------------------------
+
+Information about specific models are listed in their own python files
+**<experiment_name>-<model_name>.py**. If you want a specific order of models
+(for example you're creating models at different onset times) you should
+list your model numbers explicitly.
+
+Paste the following lines into a new file called DD-1.1.Choice.py to specify
+two contrasts - one for the main effect of all trials and one for the
+parametric modulator. The column names (e.g. 'sooner', 'later') must be values
+in the
+
+.. code-block:: python
+
+    design_file = 'DD-1.1.Choice.csv'
+    contrasts = [
+      ('all trials', ['sooner', 'later'], [1, 1]),                # 1
+      ('choice',     ['soonerxchoice^1', 'laterxchoice^1'], [1])  # 2
+    ]
+
 
 Run Workflows
 --------------
@@ -303,7 +397,7 @@ Preproc
   Performs slicetime correction, realignment, coregistration, normalization
   and smoothing.
 
-Onset
+Onsets
   Converts the design file to binary Matlab .mat SPM-style multiple conditions
   files.
 
@@ -313,7 +407,7 @@ Model
 
 .. code-block:: bash
 
-    fitz run -w onsets preproc model --model Model1
+    fitz run -w preproc onsets model --model 1.1.Choice
 
 .. note:: N.B. There is no default model, so you must specify which one you
    want to use with the ``--model`` flag.
@@ -335,3 +429,6 @@ model file called DD-Model2.py that uses it.
 
 .. _Lyman Documentation : http://stanford.edu/~mwaskom/software/lyman/experiments.html#the-design-file
 .. _xnat : http://www.xnat.org
+.. _Harvard CBS FAQ slice info : http://cbs.fas.harvard.edu/science/core-facilities/neuroimaging/information-investigators/scannerfaq#slice_order
+.. _Mumford, Poline and Poldrack 2015 : http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0126255
+.. _Neuroinformatics Research Group : http://neuroinfo.org

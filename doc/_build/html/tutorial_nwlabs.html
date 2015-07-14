@@ -91,11 +91,12 @@
 <li><a class="reference internal" href="#install-workflows">Install Workflows</a></li>
 <li><a class="reference internal" href="#setup-subjects-txt">Setup <strong>subjects.txt</strong></a></li>
 <li><a class="reference internal" href="#prepare-images-in-the-data-directory">Prepare images in the <em>data</em> directory</a><ul>
-<li><a class="reference internal" href="#aside-cbscentral-tools">Aside: CBSCentral Tools</a></li>
+<li><a class="reference internal" href="#aside-cbscentral-nrg-tools">Aside: CBSCentral NRG Tools</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#setup-workflow-options-parameters">Setup Workflow Options / Parameters</a></li>
+<li><a class="reference internal" href="#setup-workflow-preprocessing-options">Setup Workflow Preprocessing Options</a></li>
 <li><a class="reference internal" href="#copy-logfiles-and-create-the-design-file">Copy logfiles and create the Design File</a></li>
+<li><a class="reference internal" href="#model-options-design-file-and-contrasts">Model Options (Design File and Contrasts)</a></li>
 <li><a class="reference internal" href="#run-workflows">Run Workflows</a></li>
 <li><a class="reference internal" href="#bonus-alternative-models">Bonus: Alternative Models</a></li>
 </ul>
@@ -140,7 +141,8 @@ tutorial data, and configure and run our basic fMRI processing and modelling.</p
 <li>Specify which subjects to run with <strong>subjects.txt</strong></li>
 <li>Download and prepare images. (<code class="docutils literal"><span class="pre">fitz</span> <span class="pre">run</span> <span class="pre">-w</span> <span class="pre">xnatrecon</span></code> or with <code class="docutils literal"><span class="pre">ArcGet.py</span></code> and <code class="docutils literal"><span class="pre">dcmstack</span></code>)</li>
 <li>Add preproc and common model options to <strong>{experiment_name}.py</strong></li>
-<li>Copy logfiles and create design file <strong>{experiment_name}-{model_name}.csv</strong>.</li>
+<li>Copy logfiles and create design file</li>
+<li>Create model file <strong>{experiment_name}-{model_name}.csv</strong></li>
 <li>Run workflows:  <code class="docutils literal"><span class="pre">fitz</span> <span class="pre">run</span> <span class="pre">-w</span> <span class="pre">preproc</span> <span class="pre">onset</span> <span class="pre">model</span></code></li>
 </ol>
 <div class="admonition note">
@@ -160,9 +162,12 @@ code blocks.</p>
 <dt>analysis dir</dt>
 <dd>Outputs of the workflows and processed data.</dd>
 </dl>
-<p>To begin, create a directory for your project and a config directory inside it
-called &#8220;fitz&#8221; to hold configuration and any scripts you want to write. Then cd
-into it run <code class="docutils literal"><span class="pre">fitz</span> <span class="pre">setup</span></code>. Open a Terminal and type:</p>
+<p>To begin, create a directory for your project/study, and a config directory
+inside it called &#8220;fitz&#8221;; this will hold configuration and any scripts you want
+to write. You can create both of these at once by typing
+<code class="docutils literal"><span class="pre">mkdir</span> <span class="pre">-p</span> <span class="pre">&lt;study&gt;/fitz</span></code>. Finally, cd into it run <code class="docutils literal"><span class="pre">fitz</span> <span class="pre">setup</span></code> to answer
+some questions about where you want your studie&#8217;s processing directories to
+live. Open a Terminal and type:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nb">cd</span> /ncf/jwb/studies/PrisonReward/Active/Analyses
 mkdir -p spmFMRI/fitz
 <span class="nb">cd </span>spmFMRI/fitz
@@ -188,8 +193,8 @@ Please use relative paths.
 </pre></div>
 </div>
 <p>Finally, set an environment variable to tell fitz where to look for
-configurations:</p>
-<div class="highlight-python"><div class="highlight"><pre>export FITZ_DIR=`pwd`
+project.py, &lt;study&gt;.py, etc...:</p>
+<div class="highlight-python"><div class="highlight"><pre>export FITZ_DIR=&lt;path/to/study/fitz&gt;
 </pre></div>
 </div>
 <div class="admonition note">
@@ -203,9 +208,12 @@ the FITZ_DIR.</p>
 <p>Experiments are configured by creating a file called <code class="docutils literal"><span class="pre">{experiment_name}.py</span></code>.
 This is just a regular python file that defines options and variables used
 by the workflows.</p>
-<p>Use a text editor to edit the file <cite>DD.py</cite>. On linux, this might look like:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nb">cd</span> ../../fitz
-gedit DD.py
+<p>Use a text editor to edit the file <cite>DD.py</cite>.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="c"># On linux, this might look like:</span>
+gedit DD.py  <span class="c"># linux</span>
+
+<span class="c"># Or on a mac</span>
+open -a TextEdit DD.py  <span class="c"># Mac</span>
 </pre></div>
 </div>
 <p>Paste the following setting options into DD.py to tell fitz the name, version
@@ -235,7 +243,7 @@ there (instead of the fitz install dir)</p>
 that should be included. Since we&#8217;re only processing a single subject you can
 skip this step now and use the &#8220;-r sub001&#8221; option on the command line, or
 create a text file with one line:</p>
-<div class="highlight-python"><div class="highlight"><pre>echo M87100094 &gt; subjects.txt
+<div class="highlight-python"><div class="highlight"><pre><span class="n">M87100094</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -244,6 +252,9 @@ create a text file with one line:</p>
 <strong>subjects-{group_name}.txt</strong> files that may be used in
 <code class="docutils literal"><span class="pre">fitz</span> <span class="pre">run</span> <span class="pre">--group</span> <span class="pre">group_name</span></code>.</p>
 </div>
+<p>Note that when downloading from CBS Central, the subject id must be <em>exactly</em>
+the same as the &#8220;MR Session&#8221; id for the download to work correctly. I hope to
+fix this, but for the time being use the MR Session as your subject identifier.</p>
 </div>
 <div class="section" id="prepare-images-in-the-data-directory">
 <h2>Prepare images in the <em>data</em> directory<a class="headerlink" href="#prepare-images-in-the-data-directory" title="Permalink to this headline">¶</a></h2>
@@ -264,17 +275,33 @@ add the following lines to the experiment file DD.py:</p>
 <span class="n">server</span> <span class="o">=</span> <span class="s">&#39;https://cbscentral.rc.fas.harvard.edu&#39;</span>
 </pre></div>
 </div>
-<p><strong>Don&#8217;t forget this!</strong> Run the fitz workflow to download data:</p>
+<p>If you&#8217;re working on your own study, you&#8217;ll need to change and specify these
+so that the patterns match up. The xnat_project is found on the main project
+page next to &#8220;ID:&#8221;.</p>
+<img alt="_images/XnatProject.png" src="_images/XnatProject.png" />
+<p>The struct and func patterns search the &#8220;Series Description&#8221; of each image to
+find datasets to download. In the example above, the struct pattern matches the
+scan with a description of &#8220;mprage_3e_15 RMS&#8221; (this is the root mean square
+anatomical T1) and the task matches &#8220;ddt&#8221; - the Delay Discounting Task.</p>
+<img alt="_images/XnatPatterns.png" src="_images/XnatPatterns.png" />
+<p>This is a database-style search so you use &#8216;%&#8217; for a wildcard instead of &#8216;*&#8217;.</p>
+<p>You can now run the fitz workflow to download data:</p>
 <div class="highlight-python"><div class="highlight"><pre>fitz run -w xnatconvert
 </pre></div>
 </div>
-<div class="section" id="aside-cbscentral-tools">
-<h3>Aside: CBSCentral Tools<a class="headerlink" href="#aside-cbscentral-tools" title="Permalink to this headline">¶</a></h3>
-<p>If you just want to quickly grab data, and look at it, you can use ArcGet.py
-to download it and dicomstack to convert it to nifti format. This does the
-same thing as the fitz workflow, but is (for better or worse) a little more
-flexible.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="c"># Use ArcGet.py to download T1 &amp; BOLD dicoms from CBS Central</span>
+<p>Note that if you get a &#8220;No Images were downloaded&#8221; error you probably set up
+either the project&#8217;s ID or the patterns incorrectly.</p>
+<div class="section" id="aside-cbscentral-nrg-tools">
+<h3>Aside: CBSCentral NRG Tools<a class="headerlink" href="#aside-cbscentral-nrg-tools" title="Permalink to this headline">¶</a></h3>
+<p>If you just want to quickly grab data and are using the Harvard
+<a class="reference external" href="http://neuroinfo.org">Neuroinformatics Research Group</a> (NRG) xnat instances <em>CBSCentral</em> or
+<em>GSPCentral</em>, you can use ArcGet.py to download it and dicomstack to convert it
+to nifti format. This does the same thing as the fitz xnatconvert workflow, but
+is (for better or worse) a little more flexible.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="c"># Change to the data directory</span>
+<span class="nb">cd</span> ../data
+
+<span class="c"># Use ArcGet.py to download T1 &amp; BOLD dicoms from CBS Central</span>
 ArcGet.py -a cbscentral -s M87100094 -r MPRAGE,BOLD
 
 <span class="c"># Create a folder for the .nii images</span>
@@ -282,12 +309,20 @@ mkdir ../data/M87100094/images
 
 <span class="c"># Use dcmstack to convert images from DICOM to Nifti format</span>
 dcmstack --embed-meta --dest-dir ../data/M87100094/images --output-ext .nii ../data/M87100094/RAW
+
+<span class="c"># don&#39;t forget to change back to the fitz directory when you&#39;re done</span>
+<span class="nb">cd</span> ../fitz
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">ArcGet.py is currently setup &amp; available only on ncfnx / ncf
+workstations, not the Buckerville MacPro or laptops.</p>
 </div>
 </div>
-<div class="section" id="setup-workflow-options-parameters">
-<h2>Setup Workflow Options / Parameters<a class="headerlink" href="#setup-workflow-options-parameters" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="setup-workflow-preprocessing-options">
+<h2>Setup Workflow Preprocessing Options<a class="headerlink" href="#setup-workflow-preprocessing-options" title="Permalink to this headline">¶</a></h2>
 <p>Next, configure the pattern for choosing functional and structural images,
 and add any other preprocessing options.</p>
 <p>Add these config variables to your DD.py experiment file:</p>
@@ -320,24 +355,50 @@ and add any other preprocessing options.</p>
 <span class="n">input_units</span> <span class="o">=</span> <span class="n">output_units</span> <span class="o">=</span> <span class="s">&#39;secs&#39;</span>
 </pre></div>
 </div>
-<p>Models are defined in their own files, with the name of the experiment and the
-name of the model.</p>
-<p>Add the following options to a new file called DD-Model1.py:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">design_file</span> <span class="o">=</span> <span class="s">&#39;DD-Model1.csv&#39;</span>
-<span class="n">contrasts</span> <span class="o">=</span> <span class="p">[</span>
-  <span class="p">(</span><span class="s">&#39;all trials&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;sooner&#39;</span><span class="p">,</span> <span class="s">&#39;later&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>                <span class="c"># 1</span>
-  <span class="p">(</span><span class="s">&#39;choice&#39;</span><span class="p">,</span>     <span class="p">[</span><span class="s">&#39;soonerxchoice^1&#39;</span><span class="p">,</span> <span class="s">&#39;laterxchoice^1&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span>  <span class="c"># 2</span>
-<span class="p">]</span>
-</pre></div>
-</div>
+<p>The func_template and struct_template must be set, even if options
+for func_pattern and struct_pattern were set already for xnat_convert. This is
+because the xnat_convert is not the only way to convert nifti files, and the
+preproc workflow doesn&#8217;t &#8220;know&#8221; about the xnat_convert workflow. It&#8217;s important
+to be able to set them separately, but I might add an option to compbine them
+in a future release.</p>
+<p>These &#8220;template&#8221; options are used to grab nifti images from the data
+directory depending on how the file names were created - usually using the
+series description from the dicom header. Check out your data directory to
+look at the images and make sure you&#8217;re grabbing the right ones.</p>
+<p>TR is the Repetition Time, which should be specified in seconds (it is often
+shown in scan parameter sheets in ms). The number of slices can be found on
+the parameter sheet or by looking at the functional images with tools to view
+the nifti header (<code class="docutils literal"><span class="pre">fslhd</span></code>, <code class="docutils literal"><span class="pre">3dinfo</span></code>, or <code class="docutils literal"><span class="pre">SPM</span> <span class="pre">--&gt;</span> <span class="pre">Display</span> <span class="pre">Image</span></code>).</p>
+<p>One additional caveat is that slice timing can be confusing - the scan parameter
+sheets from our Siemans scanner always list a <em>Multi-slice mode</em> of
+&#8220;Interleaved&#8221;, even when slices are acquired sequentially. The correct value to
+look at is the <em>Series</em> value directly below it, which will either be
+&#8220;interleaved&#8221;, &#8220;ascending&#8221; or &#8220;descending&#8221;. Finally to completely convince
+yourself, you can look at the Siemans DICOM header field
+<em>CsaImage.MosaicRefAcqTimes</em> to see slice acquisition times.  Lots more helpful
+info is at <a class="reference external" href="http://cbs.fas.harvard.edu/science/core-facilities/neuroimaging/information-investigators/scannerfaq#slice_order">Harvard CBS FAQ slice info</a>.</p>
+<p>Finally, set some default options for modeling. In this case we will use SPM
+defaults for the hemodynamic response functions (&#8216;hrf&#8217;) in our general linear
+model, and will specify the unit for our design files will be in seconds (as
+opposed to TRs).</p>
 </div>
 <div class="section" id="copy-logfiles-and-create-the-design-file">
 <h2>Copy logfiles and create the Design File<a class="headerlink" href="#copy-logfiles-and-create-the-design-file" title="Permalink to this headline">¶</a></h2>
-<p>Create a plain-text &#8220;design file&#8221; in <cite>csv</cite> format for all runs containing
-columns for onset times, durations, conditions and parametric modulators.</p>
-<p>At a minium the design file should contain columns for &#8220;run&#8221;, &#8220;condition&#8221;, and
+<p>You have to create a plain-text &#8220;design file&#8221; in <code class="docutils literal"><span class="pre">csv</span></code> format that specifies
+the condition and onset time of stimuli as they were shown during the scan.
+This file should live at <code class="docutils literal"><span class="pre">&lt;data_dir&gt;/&lt;subject_id&gt;/design/&lt;design_name&gt;.csv</span></code>
+and should have columns for onset times, durations, conditions and parametric
+modulators to use for your fMRI models. Each row in this file corresponds to an
+event, where the term “event” is used broadly and can mean a “block” in a block
+design experiment.</p>
+<p>At a minimum the design file should contain columns for &#8220;run&#8221;, &#8220;condition&#8221;, and
 &#8220;onset&#8221;; it may also have columns for duration and &#8220;pmod-&#8221; columns that will be
-entered as parametric modulators.</p>
+entered as parametric modulators. Note that the &#8216;pmod-&#8216; columns correspond
+<em>roughly</em> to &#8216;value&#8217; columns in a standard lyman design file, but are not the
+same thing. See <a class="reference external" href="http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0126255">Mumford, Poline and Poldrack 2015</a> for a discussion on
+how parametric regressors and orthogonalization are handled between different
+fMRI packages. (TL;DR, Fitz enters these columns as pmods in SPM, while
+Lyman enters values as amplitudes.)</p>
 <p>An extremely simple design file would look like:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">run</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">onset</span>
 <span class="mi">1</span><span class="p">,</span> <span class="n">sooner</span><span class="p">,</span> <span class="mi">0</span>
@@ -348,15 +409,20 @@ entered as parametric modulators.</p>
 </div>
 <p>For simple designs where most of what you want already exists in your logfiles,
 fitz includes a simple script called <code class="docutils literal"><span class="pre">textOnsets2Long.py</span></code> that will select
-and split up your full logfile into a &#8220;long&#8221; style csv with appropriate columns.
-This assumes that each row of your logfile is a trial, and that there are
-columns that list the trial type (condition), trial time (onset), and trial
+and split up your full logfile into a &#8220;long&#8221; style csv with appropriate
+columns. This assumes that each row of your logfile is a trial, and that there
+are columns that list the trial type (condition), trial time (onset), and trial
 duration (this defaults to zero), and additional values to use for parametric
 modulators (i.e. which option a particpant chose, the value of their choice).</p>
-<p>To use it, specify which of the column names in your logfile hold map to the
-appropriate columns (condition, onset, duration, pmod) and list the logfiles.</p>
+<p><em>If your logfiles don&#8217;t have appropriate columns already, you won&#8217;t be able to
+use the script helper and will have to make your own design files, or create new
+logfiles that include these columns.</em></p>
+<p>To use it, specify which of the column names in your logfile map to the
+appropriate columns (condition, onset, duration, pmod) and list the logfiles.
+Make sure that your logfiles sort correctly when you list them with <code class="docutils literal"><span class="pre">ls</span></code>,
+because the run column will be added based on the filenames&#8217; alphabetical order.</p>
 <p>For this DD task, we will map the following columns from the logfiles and
-create a model file in <em>data</em>/{subject_id}/design/<strong>DD-Model1.py</strong>:</p>
+create a model file in <em>data</em>/{subject_id}/design/<strong>DD-1.1.Choice.py</strong>:</p>
 <table border="1" class="table-striped docutils">
 <colgroup>
 <col width="51%" />
@@ -368,7 +434,7 @@ create a model file in <em>data</em>/{subject_id}/design/<strong>DD-Model1.py</s
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>immediacy</td>
+<tr class="row-even"><td>choice</td>
 <td>condition</td>
 </tr>
 <tr class="row-odd"><td>cuesTime</td>
@@ -398,20 +464,38 @@ to create the csv yourself without the help of <code class="docutils literal"><s
 additional regressors file where post-convolved regressors for each TR may also
 be added to the model.</p>
 </div>
+<div class="section" id="model-options-design-file-and-contrasts">
+<h2>Model Options (Design File and Contrasts)<a class="headerlink" href="#model-options-design-file-and-contrasts" title="Permalink to this headline">¶</a></h2>
+<p>Information about specific models are listed in their own python files
+<strong>&lt;experiment_name&gt;-&lt;model_name&gt;.py</strong>. If you want a specific order of models
+(for example you&#8217;re creating models at different onset times) you should
+list your model numbers explicitly.</p>
+<p>Paste the following lines into a new file called DD-1.1.Choice.py to specify
+two contrasts - one for the main effect of all trials and one for the
+parametric modulator. The column names (e.g. &#8216;sooner&#8217;, &#8216;later&#8217;) must be values
+in the</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">design_file</span> <span class="o">=</span> <span class="s">&#39;DD-1.1.Choice.csv&#39;</span>
+<span class="n">contrasts</span> <span class="o">=</span> <span class="p">[</span>
+  <span class="p">(</span><span class="s">&#39;all trials&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;sooner&#39;</span><span class="p">,</span> <span class="s">&#39;later&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>                <span class="c"># 1</span>
+  <span class="p">(</span><span class="s">&#39;choice&#39;</span><span class="p">,</span>     <span class="p">[</span><span class="s">&#39;soonerxchoice^1&#39;</span><span class="p">,</span> <span class="s">&#39;laterxchoice^1&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span>  <span class="c"># 2</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="run-workflows">
 <h2>Run Workflows<a class="headerlink" href="#run-workflows" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
 <dt>Preproc</dt>
 <dd>Performs slicetime correction, realignment, coregistration, normalization
 and smoothing.</dd>
-<dt>Onset</dt>
+<dt>Onsets</dt>
 <dd>Converts the design file to binary Matlab .mat SPM-style multiple conditions
 files.</dd>
 <dt>Model</dt>
 <dd>Calculates artifacts, specifies a model design and estimates the model
 and contrasts.</dd>
 </dl>
-<div class="highlight-bash"><div class="highlight"><pre>fitz run -w onsets preproc model --model Model1
+<div class="highlight-bash"><div class="highlight"><pre>fitz run -w preproc onsets model --model 1.1.Choice
 </pre></div>
 </div>
 <div class="admonition note">
