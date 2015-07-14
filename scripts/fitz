@@ -6,12 +6,13 @@ Main execution script for fMRI analysis in the ecosystem.
 import os
 import sys
 import argparse
+import imp
 import fitz
 import os.path as op
 from nipype import config
 import subprocess
 
-print 'Fitz: Version 0.0.1dev'
+print 'Fitz: Version %s' % fitz.version
 
 
 def main(arglist):
@@ -52,29 +53,21 @@ def run(args):
 
     setup_dirs(project['analysis_dir'], exp_base, exp_name, subject_list)
 
-    if 'xnatconvert' in args.workflows:
-        import fitz.pipes.workflows.xnatconvert as f_xnatconvert
-        params = f_xnatconvert.default_parameters
-        params.update(exp)
-        xnatconvert = f_xnatconvert.workflow(
+    for d in os.walk(os.environ['FITZ_DIR']).next()[1]:  # TLDs of FITZ_DIR
+        sys.path.insert(0, os.path.join(os.getcwd(), d, 'workflows'))
+
+    for wf_name in args.workflows:
+        try:
+            mod = imp.find_module(wf_name)
+            wf_module = imp.load_module("wf", *mod)
+        except (IOError, ImportError):
+            print "Could not find any workflows matching %s" % wf_name
+            raise
+
+        params = update_params(wf_module, exp)
+        workflow = wf_module.workflow(
             project, params, args, subj_source)
-        fitz.run_workflow(xnatconvert, "xnatconvert", args)
-
-    if 'preproc' in args.workflows:
-        # Possibly execute the workflow, depending on the command line
-        import fitz.pipes.workflows.preproc as f_preproc
-        preproc = f_preproc.workflow(project, exp, args, subj_source)
-        fitz.run_workflow(preproc, "preproc", args)
-
-    if 'onset' in args.workflows:
-        import fitz.pipes.workflows.onset as f_onset
-        onset = f_onset.workflow(project, exp, args, subj_source)
-        fitz.run_workflow(onset, "onset", args)
-
-    if 'model' in args.workflows:
-        import fitz.pipes.workflows.model as f_model
-        model = f_model.workflow(project, exp, args, subj_source)
-        fitz.run_workflow(model, "model", args)
+        fitz.run_workflow(workflow, wf_name, args)
 
 
 def setup_dirs(analysis_dir, exp_base, exp_name, subject_list):
@@ -97,13 +90,44 @@ def install(args):
     exp = fitz.gather_experiment_info(project['default_exp'])
 
     cmd = ['git', 'clone', exp['workflow_src']]
+    workflow_base = os.path.splitext(os.path.basename(exp['workflow_src']))[0]
+    print workflow_base
     print ' '.join(cmd)
-    subprocess.check_call(cmd)
+    if not os.path.isdir(workflow_base):
+        subprocess.check_call(cmd)
+    else:
+        print "Workflow %s already exists." % workflow_base
 
     cmd = ['git', 'checkout', exp['workflow_version']]
     print ' '.join(cmd)
-    # subprocess.check_call(cmd)
+    try:
+        subprocess.check_call(cmd)
+    except:
+        print "Error checking out tag %s" % exp['workflow_version']
+        # raise
 
+def update_params(wf_module, exp):
+    print sys.path, dir(wf_module), wf_module.__name__, wf_module.__file__
+    try:
+        params = wf_module.default_parameters()
+    except IOError:
+        print "Workflow must define a default_parameters method!"
+        raise
+
+    # default_names = set(params.keys())
+    params.update(exp)
+    # current_names = set(params.keys())
+    # print default_names, current_names
+
+    # new_names = current_names - default_names
+    # print new_names
+    # if len(new_names):
+    #     msg = ["You may have an invalid configuration:"]
+    #     for name in new_names:
+    #         msg.append("A value for %s was specified, " % name +
+    #                    "but not expected by the workflow")
+    #     raise Exception(msg)
+    return params
 
 def parse_args(arglist):
     """Take an arglist and return an argparse Namespace."""
