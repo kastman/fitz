@@ -1,5 +1,6 @@
 from frontend import *
 import tools
+import os.path as op
 
-version = "0.0.1-dev"
-__version__ = version
+with open(op.join(op.dirname(__file__), 'VERSION')) as version_file:
+    version = version_file.read().strip()
