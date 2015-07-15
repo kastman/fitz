@@ -58,6 +58,7 @@ def gather_experiment_info(exp_name=None, model=None):
 
     # Possibly import the alternate model details
     if model is not None:
+        check_modelname(model, exp_name)
         try:
             mod = sys.modules[model]
         except KeyError:
@@ -185,3 +186,41 @@ def run_workflow(wf, name=None, args=None):
     wf.write_graph(str(wf), format='svg')
     if (name is None or name in args.workflows) and not args.dontrun:
         wf.run(plugin, plugin_args)
+
+
+def update_params(wf_module, exp):
+    # print sys.path, dir(wf_module), wf_module.__name__, wf_module.__file__
+    try:
+        params = wf_module.default_parameters()
+    except IOError:
+        print "Workflow must define a default_parameters method!"
+        raise
+
+    # default_names = set(params.keys())
+    params.update(exp)
+    # current_names = set(params.keys())
+    # print default_names, current_names
+
+    # new_names = current_names - default_names
+    # print new_names
+    # if len(new_names):
+    #     msg = ["You may have an invalid configuration:"]
+    #     for name in new_names:
+    #         msg.append("A value for %s was specified, " % name +
+    #                    "but not expected by the workflow")
+    #     raise Exception(msg)
+    return params
+
+
+def check_modelname(model, exp_name):
+    """Do Some sanity checks on the model"""
+    err = []
+    if model.endswith('.py'):
+        err.append("Don't include '.py' when listing your model. ")
+    if model.startswith(exp_name):
+        err.append("Don't include the experiment name (%s) " % exp_name +
+                   "when listing your model.")
+    if len(err):
+        err.insert(0, "Problem with the way you specified your model on " +
+                      "the commandline:")
+        raise IOError('\n- '.join(err))

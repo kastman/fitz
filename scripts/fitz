@@ -53,9 +53,12 @@ def run(args):
 
     setup_dirs(project['analysis_dir'], exp_base, exp_name, subject_list)
 
-    for d in os.walk(os.environ['FITZ_DIR']).next()[1]:  # TLDs of FITZ_DIR
-        sys.path.insert(0, os.path.join(os.getcwd(), d, 'workflows'))
-
+    stream_dir = os.path.join(os.environ['FITZ_DIR'], exp['workflow'],
+                              'workflows')
+    if not op.isdir(stream_dir):
+        raise IOError("Run `fitz install` to set up your stream of workflows,"
+                      "%s does not exist." % stream_dir)
+    sys.path.insert(0, stream_dir)
     for wf_name in args.workflows:
         try:
             mod = imp.find_module(wf_name)
@@ -64,7 +67,7 @@ def run(args):
             print "Could not find any workflows matching %s" % wf_name
             raise
 
-        params = update_params(wf_module, exp)
+        params = fitz.frontend.update_params(wf_module, exp)
         workflow = wf_module.workflow(
             project, params, args, subj_source)
         fitz.run_workflow(workflow, wf_name, args)
@@ -106,28 +109,6 @@ def install(args):
         print "Error checking out tag %s" % exp['workflow_version']
         # raise
 
-def update_params(wf_module, exp):
-    print sys.path, dir(wf_module), wf_module.__name__, wf_module.__file__
-    try:
-        params = wf_module.default_parameters()
-    except IOError:
-        print "Workflow must define a default_parameters method!"
-        raise
-
-    # default_names = set(params.keys())
-    params.update(exp)
-    # current_names = set(params.keys())
-    # print default_names, current_names
-
-    # new_names = current_names - default_names
-    # print new_names
-    # if len(new_names):
-    #     msg = ["You may have an invalid configuration:"]
-    #     for name in new_names:
-    #         msg.append("A value for %s was specified, " % name +
-    #                    "but not expected by the workflow")
-    #     raise Exception(msg)
-    return params
 
 def parse_args(arglist):
     """Take an arglist and return an argparse Namespace."""
