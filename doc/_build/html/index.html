@@ -30,7 +30,7 @@
     <script type="text/javascript" src="_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
     <link rel="top" title="fitz 0.0.1.dev documentation" href="#" />
-    <link rel="next" title="Workflow Inputs and Outputs" href="workflows.html" />
+    <link rel="next" title="Tutorial for a standard fMRI SPM Pipeline" href="tutorial_nwlabs.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
 <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
@@ -68,9 +68,9 @@
   <ul class="dropdown-menu globaltoc"
       role="menu"
       aria-labelledby="dLabelGlobalToc"><ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflow Inputs and Outputs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial_nwlabs.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_nwlabs.html">Tutorial for a standard fMRI SPM Pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="creating_fitz_pipelines.html">Creating New Fitz Pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_file_glossary.html">Glossary of Configuration Files</a></li>
 </ul>
 </ul>
 </li>
@@ -85,10 +85,11 @@
       role="menu"
       aria-labelledby="dLabelLocalToc"><ul>
 <li><a class="reference internal" href="#">Fitz: Modern Nipype Workflow Management</a><ul>
+<li><a class="reference internal" href="#step-1">Step 1</a></li>
+<li><a class="reference internal" href="#step-2">Step 2</a></li>
 <li><a class="reference internal" href="#documentation-contents">Documentation Contents</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 </ul>
 </li>
@@ -120,21 +121,40 @@
       
   <div class="section" id="fitz-modern-nipype-workflow-management">
 <h1>Fitz: Modern Nipype Workflow Management<a class="headerlink" href="#fitz-modern-nipype-workflow-management" title="Permalink to this headline">¶</a></h1>
-<p>Fitz provides an interface to reproducibly manage and execute custom nipype
+<p>Fitz provides an interface to efficiently manage and execute custom nipype
 workflows for the analysis of neuroimaging experiments. It expands on the
 <a class="reference external" href="http://stanford.edu/~mwaskom/software/lyman">Lyman</a> &#8220;ecosystem&#8221; to allow workflows to be easily plugged into the lyman
-interface.</p>
-<p>Fitz provides many of the wrappings that lyman created in a way that allows
-people to spend their time running reproducible pipelines instead of messing
-around re-writing boilerplate.</p>
+configuration / execution study processing experience.</p>
+<p>Using fitz consists of two steps:</p>
+<div class="section" id="step-1">
+<h2>Step 1<a class="headerlink" href="#step-1" title="Permalink to this headline">¶</a></h2>
+<p>Create a few plain-text (.py and .csv)
+<a class="reference internal" href="config_file_glossary.html"><em>configuration files</em></a> that specify:</p>
+<ul class="simple">
+<li>Where data lives and analysis files should go</li>
+<li>Processing options (e.g. the size of the smoothing kernel, whether or not
+to perform optional steps...)</li>
+<li>Source url and version of the pipeline to use</li>
+<li>Other config files for the pipeline (fMRI Onset Times, Diffusion Directions)
+and how to load them for each subject.</li>
+</ul>
+</div>
+<div class="section" id="step-2">
+<h2>Step 2<a class="headerlink" href="#step-2" title="Permalink to this headline">¶</a></h2>
+<p>Automatically download the pipeline by running <code class="docutils literal"><span class="pre">fitz</span> <span class="pre">setup</span></code>, and
+run subjects with <code class="docutils literal"><span class="pre">fitz</span> <span class="pre">run</span></code>.</p>
+</div>
 <div class="section" id="documentation-contents">
 <h2>Documentation Contents<a class="headerlink" href="#documentation-contents" title="Permalink to this headline">¶</a></h2>
+<p>For an example of running fitz with an existing pipeline, check out the
+<a class="reference internal" href="tutorial_nwlabs.html"><em>tutorial for a standard fMRI SPM pipe</em></a>.</p>
+<p>For info on creating your own pipelines to use with fitz, check out the
+[incomplete] guide on <a class="reference internal" href="creating_fitz_pipelines.html"><em>Creating New Fitz Pipelines</em></a>.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflow Inputs and Outputs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial_nwlabs.html">Tutorial</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_nwlabs.html">Tutorial for a standard fMRI SPM Pipeline</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_nwlabs.html#setup-directories-and-project-py">Setup Directories and <strong>project.py</strong></a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_nwlabs.html#setup-experiment-file-dd-py">Setup Experiment File <strong>DD.py</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_nwlabs.html#setup-experiment-file-experiment-name-py">Setup Experiment File <strong>{experiment_name}.py</strong></a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_nwlabs.html#install-workflows">Install Workflows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_nwlabs.html#setup-subjects-txt">Setup <strong>subjects.txt</strong></a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_nwlabs.html#prepare-images-in-the-data-directory">Prepare images in the <em>data</em> directory</a></li>
@@ -146,17 +166,10 @@ around re-writing boilerplate.</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="creating_fitz_pipelines.html">Creating New Fitz Pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_file_glossary.html">Glossary of Configuration Files</a></li>
 </ul>
 </div>
 </div>
-</div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><a class="reference internal" href="genindex.html"><span>Index</span></a></li>
-<li><a class="reference internal" href="py-modindex.html"><span>Module Index</span></a></li>
-<li><a class="reference internal" href="search.html"><span>Search Page</span></a></li>
-</ul>
 </div>
 
 

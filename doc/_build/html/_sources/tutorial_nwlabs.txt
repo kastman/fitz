@@ -1,7 +1,5 @@
-.. _tutorial_nwlabs:
-
-Tutorial
-=========
+Tutorial for a standard fMRI SPM Pipeline
+==========================================
 
 The following instructions will help you access images and logfiles from our
 tutorial data, and configure and run our basic fMRI processing and modelling.
@@ -14,7 +12,8 @@ tutorial data, and configure and run our basic fMRI processing and modelling.
 
 4. Specify which subjects to run with **subjects.txt**
 
-5. Download and prepare images. (``fitz run -w xnatrecon`` or with ``ArcGet.py`` and ``dcmstack``)
+5. Download and prepare images. (``fitz run -w xnatrecon`` or (Harvard CBS) with
+   ``ArcGet.py`` and ``dcmstack``)
 
 6. Add preproc and common model options to **{experiment_name}.py**
 
@@ -83,14 +82,14 @@ project.py, <study>.py, etc...::
           the FITZ_DIR.
 
 
-Setup Experiment File **DD.py**
---------------------------------
+Setup Experiment File **{experiment_name}.py**
+------------------------------------------------
 
 Experiments are configured by creating a file called ``{experiment_name}.py``.
 This is just a regular python file that defines options and variables used
 by the workflows.
 
-Use a text editor to edit the file `DD.py`.
+Use a text editor to edit the file **DD.py**.
 
 .. code-block:: bash
 
@@ -107,8 +106,8 @@ and path to the workflow you want this experiment to use:
 
     # Workflow Parameters
     # --------------------
-    workflow_src = "git@ncfgit.rc.fas.harvard.edu:kastman/nwlabs_fitz.git"
-    workflow_version = "0.0.1-dev"
+    workflow_src = "git@github.com:kastman/fitz_nwlabs_spm_pipeline.git"
+    workflow_version = "0.0.1.dev"
 
 
 Install Workflows
@@ -137,7 +136,7 @@ create a text file with one line::
 
     M87100094
 
-.. note:: If desired, other groups of subjects may also be specified by creating
+.. note:: Other groups of subjects may also be specified by creating
           **subjects-{group_name}.txt** files that may be used in
           ``fitz run --group group_name``.
 
@@ -186,8 +185,12 @@ You can now run the fitz workflow to download data::
 
     fitz run -w xnatconvert
 
-Note that if you get a "No Images were downloaded" error you probably set up
-either the project's ID or the patterns incorrectly.
+
+.. note:: If you get a "No Images were downloaded" error you probably set up
+   either the project's ID or the patterns incorrectly.
+
+.. note:: If you get an authentication error, you need to setup your login info.
+   See `xnat_auth info`_ for instructions.
 
 Aside: CBSCentral NRG Tools
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -416,19 +419,13 @@ Model
 Bonus: Alternative Models
 --------------------------
 
-Exercise: Create a new design file with a differnet onset, and create a new
+Exercise: Create a new design file with a different onset, and create a new
 model file called DD-Model2.py that uses it.
 
-.. cssclass:: table-striped
-
-  +---------------------+-----------+----------+--------------+----------------+
-  | design column name  | condition |  onset   | duration     | pmod-ChoiceInt |
-  +=====================+===========+==========+==============+================+
-  | logfile column name | choice    | cuesTime | trialResp.rt | choiceInt      |
-  +---------------------+-----------+----------+--------------+----------------+
 
 .. _Lyman Documentation : http://stanford.edu/~mwaskom/software/lyman/experiments.html#the-design-file
 .. _xnat : http://www.xnat.org
 .. _Harvard CBS FAQ slice info : http://cbs.fas.harvard.edu/science/core-facilities/neuroimaging/information-investigators/scannerfaq#slice_order
 .. _Mumford, Poline and Poldrack 2015 : http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0126255
 .. _Neuroinformatics Research Group : http://neuroinfo.org
+.. _xnat_auth info : http://people.fas.harvard.edu/~kastman/nwlabs_pipeline/xnat_auth.html

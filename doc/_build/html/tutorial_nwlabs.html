@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tutorial &mdash; fitz 0.0.1.dev documentation</title>
+    <title>Tutorial for a standard fMRI SPM Pipeline &mdash; fitz 0.0.1.dev documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -31,7 +31,7 @@
     <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
     <link rel="top" title="fitz 0.0.1.dev documentation" href="index.html" />
     <link rel="next" title="Creating New Fitz Pipelines" href="creating_fitz_pipelines.html" />
-    <link rel="prev" title="Workflow Inputs and Outputs" href="workflows.html" />
+    <link rel="prev" title="Fitz: Modern Nipype Workflow Management" href="index.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
 <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
@@ -69,9 +69,9 @@
   <ul class="dropdown-menu globaltoc"
       role="menu"
       aria-labelledby="dLabelGlobalToc"><ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflow Inputs and Outputs</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Tutorial for a standard fMRI SPM Pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="creating_fitz_pipelines.html">Creating New Fitz Pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_file_glossary.html">Glossary of Configuration Files</a></li>
 </ul>
 </ul>
 </li>
@@ -85,9 +85,9 @@
   <ul class="dropdown-menu localtoc"
       role="menu"
       aria-labelledby="dLabelLocalToc"><ul>
-<li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#">Tutorial for a standard fMRI SPM Pipeline</a><ul>
 <li><a class="reference internal" href="#setup-directories-and-project-py">Setup Directories and <strong>project.py</strong></a></li>
-<li><a class="reference internal" href="#setup-experiment-file-dd-py">Setup Experiment File <strong>DD.py</strong></a></li>
+<li><a class="reference internal" href="#setup-experiment-file-experiment-name-py">Setup Experiment File <strong>{experiment_name}.py</strong></a></li>
 <li><a class="reference internal" href="#install-workflows">Install Workflows</a></li>
 <li><a class="reference internal" href="#setup-subjects-txt">Setup <strong>subjects.txt</strong></a></li>
 <li><a class="reference internal" href="#prepare-images-in-the-data-directory">Prepare images in the <em>data</em> directory</a><ul>
@@ -130,8 +130,8 @@
   <div class="row">
     <div class="col-md-12">
       
-  <div class="section" id="tutorial">
-<span id="tutorial-nwlabs"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="tutorial-for-a-standard-fmri-spm-pipeline">
+<h1>Tutorial for a standard fMRI SPM Pipeline<a class="headerlink" href="#tutorial-for-a-standard-fmri-spm-pipeline" title="Permalink to this headline">¶</a></h1>
 <p>The following instructions will help you access images and logfiles from our
 tutorial data, and configure and run our basic fMRI processing and modelling.</p>
 <ol class="arabic simple">
@@ -139,7 +139,8 @@ tutorial data, and configure and run our basic fMRI processing and modelling.</p
 <li>Specify experiment processing parameters in <strong>{experiment_name}.py</strong>.</li>
 <li>Download the requested workflow(s) with <code class="docutils literal"><span class="pre">fitz</span> <span class="pre">install</span></code></li>
 <li>Specify which subjects to run with <strong>subjects.txt</strong></li>
-<li>Download and prepare images. (<code class="docutils literal"><span class="pre">fitz</span> <span class="pre">run</span> <span class="pre">-w</span> <span class="pre">xnatrecon</span></code> or with <code class="docutils literal"><span class="pre">ArcGet.py</span></code> and <code class="docutils literal"><span class="pre">dcmstack</span></code>)</li>
+<li>Download and prepare images. (<code class="docutils literal"><span class="pre">fitz</span> <span class="pre">run</span> <span class="pre">-w</span> <span class="pre">xnatrecon</span></code> or (Harvard CBS) with
+<code class="docutils literal"><span class="pre">ArcGet.py</span></code> and <code class="docutils literal"><span class="pre">dcmstack</span></code>)</li>
 <li>Add preproc and common model options to <strong>{experiment_name}.py</strong></li>
 <li>Copy logfiles and create design file</li>
 <li>Create model file <strong>{experiment_name}-{model_name}.csv</strong></li>
@@ -203,12 +204,12 @@ project.py, &lt;study&gt;.py, etc...:</p>
 the FITZ_DIR.</p>
 </div>
 </div>
-<div class="section" id="setup-experiment-file-dd-py">
-<h2>Setup Experiment File <strong>DD.py</strong><a class="headerlink" href="#setup-experiment-file-dd-py" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="setup-experiment-file-experiment-name-py">
+<h2>Setup Experiment File <strong>{experiment_name}.py</strong><a class="headerlink" href="#setup-experiment-file-experiment-name-py" title="Permalink to this headline">¶</a></h2>
 <p>Experiments are configured by creating a file called <code class="docutils literal"><span class="pre">{experiment_name}.py</span></code>.
 This is just a regular python file that defines options and variables used
 by the workflows.</p>
-<p>Use a text editor to edit the file <cite>DD.py</cite>.</p>
+<p>Use a text editor to edit the file <strong>DD.py</strong>.</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="c"># On linux, this might look like:</span>
 gedit DD.py  <span class="c"># linux</span>
 
@@ -220,8 +221,8 @@ open -a TextEdit DD.py  <span class="c"># Mac</span>
 and path to the workflow you want this experiment to use:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Workflow Parameters</span>
 <span class="c"># --------------------</span>
-<span class="n">workflow_src</span> <span class="o">=</span> <span class="s">&quot;git@ncfgit.rc.fas.harvard.edu:kastman/nwlabs_fitz.git&quot;</span>
-<span class="n">workflow_version</span> <span class="o">=</span> <span class="s">&quot;0.0.1-dev&quot;</span>
+<span class="n">workflow_src</span> <span class="o">=</span> <span class="s">&quot;git@github.com:kastman/fitz_nwlabs_spm_pipeline.git&quot;</span>
+<span class="n">workflow_version</span> <span class="o">=</span> <span class="s">&quot;0.0.1.dev&quot;</span>
 </pre></div>
 </div>
 </div>
@@ -248,7 +249,7 @@ create a text file with one line:</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If desired, other groups of subjects may also be specified by creating
+<p class="last">Other groups of subjects may also be specified by creating
 <strong>subjects-{group_name}.txt</strong> files that may be used in
 <code class="docutils literal"><span class="pre">fitz</span> <span class="pre">run</span> <span class="pre">--group</span> <span class="pre">group_name</span></code>.</p>
 </div>
@@ -289,8 +290,16 @@ anatomical T1) and the task matches &#8220;ddt&#8221; - the Delay Discounting Ta
 <div class="highlight-python"><div class="highlight"><pre>fitz run -w xnatconvert
 </pre></div>
 </div>
-<p>Note that if you get a &#8220;No Images were downloaded&#8221; error you probably set up
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you get a &#8220;No Images were downloaded&#8221; error you probably set up
 either the project&#8217;s ID or the patterns incorrectly.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you get an authentication error, you need to setup your login info.
+See <a class="reference external" href="http://people.fas.harvard.edu/~kastman/nwlabs_pipeline/xnat_auth.html">xnat_auth info</a> for instructions.</p>
+</div>
 <div class="section" id="aside-cbscentral-nrg-tools">
 <h3>Aside: CBSCentral NRG Tools<a class="headerlink" href="#aside-cbscentral-nrg-tools" title="Permalink to this headline">¶</a></h3>
 <p>If you just want to quickly grab data and are using the Harvard
@@ -506,33 +515,8 @@ want to use with the <code class="docutils literal"><span class="pre">--model</s
 </div>
 <div class="section" id="bonus-alternative-models">
 <h2>Bonus: Alternative Models<a class="headerlink" href="#bonus-alternative-models" title="Permalink to this headline">¶</a></h2>
-<p>Exercise: Create a new design file with a differnet onset, and create a new
+<p>Exercise: Create a new design file with a different onset, and create a new
 model file called DD-Model2.py that uses it.</p>
-<table border="1" class="table-striped docutils">
-<colgroup>
-<col width="29%" />
-<col width="15%" />
-<col width="14%" />
-<col width="19%" />
-<col width="22%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">design column name</th>
-<th class="head">condition</th>
-<th class="head">onset</th>
-<th class="head">duration</th>
-<th class="head">pmod-ChoiceInt</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>logfile column name</td>
-<td>choice</td>
-<td>cuesTime</td>
-<td>trialResp.rt</td>
-<td>choiceInt</td>
-</tr>
-</tbody>
-</table>
 </div>
 </div>
 
