@@ -1,0 +1,7 @@
+Fitz: Version 0.0.1.dev
+usage: fitz install [-h]
+
+Install workflows requested by experiments
+
+optional arguments:
+  -h, --help  show this help message and exit

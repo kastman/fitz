@@ -1,0 +1,15 @@
+
+v0.0.1 (July, 2015)
+----------------------
+
+Initial release.
+
+What's working:
+
+* Pipelines can be flexibly installed and run.
+
+What's upcoming:
+
+* Maybe switch workflow options to traits instead of simple python variables;
+  that might make it easier for users to see what's available.
+* Maybe add a requirements file for pipelines to define dependencies.

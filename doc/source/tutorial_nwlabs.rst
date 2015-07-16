@@ -74,7 +74,8 @@ after each one to accept the defaults::
     > Remove working directory after execution? (Y/n) [y]:
 
 Finally, set an environment variable to tell fitz where to look for
-project.py, <study>.py, etc...::
+project.py, <study>.py, etc... This will let you run ``fitz`` from any directory
+and it will be able to find all the setup without you telling it::
 
     export FITZ_DIR=<path/to/study/fitz>
 
@@ -89,7 +90,9 @@ Experiments are configured by creating a file called ``{experiment_name}.py``.
 This is just a regular python file that defines options and variables used
 by the workflows.
 
-Use a text editor to edit the file **DD.py**.
+In this tutorial we will be processing a simple Delay Discounting experiment,
+so our Experiment Name will be DD. Use a text editor to create and edit the
+file **DD.py**.
 
 .. code-block:: bash
 
@@ -99,57 +102,75 @@ Use a text editor to edit the file **DD.py**.
     # Or on a mac
     open -a TextEdit DD.py  # Mac
 
-Paste the following setting options into DD.py to tell fitz the name, version
-and path to the workflow you want this experiment to use:
+The first thing to do is to specify which pipeline (group of workflows) we want
+to use for this experiment. For this tutorial we're going to use a standard
+SPM Pipeline found `here
+<https://github.com/kastman/fitz_nwlabs_spm_pipeline>`_), which consists of four
+workflows: xnatconvert, preproc, onset, and model. We'll get to each of those
+workflows below, but first add the name, source URL and version for the pipeline
+into the experiment file:
 
 .. code-block:: python
 
     # Workflow Parameters
     # --------------------
-    workflow_src = "git@github.com:kastman/fitz_nwlabs_spm_pipeline.git"
+    workflow_src = "https://github.com/kastman/fitz_nwlabs_spm_pipeline.git"
     workflow_version = "0.0.1.dev"
 
 
 Install Workflows
 ------------------
 
-Install the workflows requested by the experiment file. This downloads the
-exact version of the workflow as specified in {experiment}.py and copies it into
-the fitz directory. You only have to do this once at the start (or any time that
-the workflow changes, which should ideally be never).
+You should now download the pipeline requested by the experiment file. This
+goes out to the internet (a repository on github in this case) and grabs the
+exact version of the workflow specified in {experiment}.py and copies it into
+the fitz directory. You only have to do this once at the start of your
+experiment (or any time that the pipeline changes, which should ideally be
+never).
 
 .. code-block:: bash
 
     fitz install
 
-**TODO** make fitz clone to the FITZ_DIR (instead of pwd) and make it read pipelines
-there (instead of the fitz install dir)
-
+In theory you could wait until just before running your experiment to download
+the pipeline, but downloading it now allows you to see the default options and
+parameters that will be used for all of your workflows (how? ref) so it's best
+to do it now.
 
 Setup **subjects.txt**
 -----------------------
 
 A subjects.txt file in the fitz directory is used to list all the subjects
-that should be included. Since we're only processing a single subject you can
-skip this step now and use the "-r sub001" option on the command line, or
-create a text file with one line::
+that should be included. For this tutorial we'll only process a single subject,
+so create a text file with one line::
 
     M87100094
 
-.. note:: Other groups of subjects may also be specified by creating
-          **subjects-{group_name}.txt** files that may be used in
-          ``fitz run --group group_name``.
+By default ``fitz run`` will perform the processing on all subjects in the
+subjects.txt file, but there are several subject-related options. You can use
+``--subjects M87100094`` to specify which subjects to run (in case you need to
+re-run just a few after making fixes, and you can also create other group files
+called **subjects-{group_name}.txt** that can be run with the ``fitz run
+--group group_name`` option.  You can see all the options for ``fitz run``
+:ref:`here <commandline>`.
 
-Note that when downloading from CBS Central, the subject id must be *exactly*
-the same as the "MR Session" id for the download to work correctly. I hope to
-fix this, but for the time being use the MR Session as your subject identifier.
+.. note:: When downloading from CBS Central, the subject id must be
+          *exactly* the same as the "MR Session" id for the download to work
+          correctly. I hope to fix this soon, but for the time being use the MR
+          Session as your subject identifier.
+
 
 Prepare images in the *data* directory
 --------------------------------------------
 
 For this tutorial, you will download dicom data from the CBS Central `xnat`_
-server.  We're going to use one real subject from the PrisonReward study as an
+server.  We're going to use one real subject from the RSA study as an
 example.
+
+Downloading from XNAT and converting images into nifti files in a single step
+is the first workflow in the NWLabs SPM Pipeline, but you don't need to use
+it - as long as you get nifti images into the data directory, you can use the
+other pipelines (preproc, onset, model) without an xnat server.
 
 Image download and conversion to nifti is a special type of workflow - the
 output files are put into *data*/{subject_id}/images directory instead of
@@ -162,8 +183,7 @@ add the following lines to the experiment file DD.py::
     # Xnat Download and Convert
     # --------------------------
     xnat_project = 'Buckholtz_RSA'
-    struct_pattern = 'mprage%RMS'
-    func_pattern = 'ddt%'
+    download_patterns = ['mprage%RMS', 'ddt%']
     server = 'https://cbscentral.rc.fas.harvard.edu'
 
 If you're working on your own study, you'll need to change and specify these
@@ -172,10 +192,12 @@ page next to "ID:".
 
 .. image:: _static/images/XnatProject.png
 
-The struct and func patterns search the "Series Description" of each image to
-find datasets to download. In the example above, the struct pattern matches the
+The list of patterns search the "Series Description" of each image to
+find datasets to download; any scan series that match any of the patterns in
+the list will be downloaded. In the example above, the first pattern matches the
 scan with a description of "mprage_3e_15 RMS" (this is the root mean square
-anatomical T1) and the task matches "ddt" - the Delay Discounting Task.
+anatomical T1) and the second pattern matches BOLD runs with "ddt" (the Delay
+Discounting Task) in their description.
 
 .. image:: _static/images/XnatPatterns.png
 
@@ -294,47 +316,100 @@ opposed to TRs).
 Copy logfiles and create the Design File
 -----------------------------------------
 
-You have to create a plain-text "design file" in ``csv`` format that specifies
-the condition and onset time of stimuli as they were shown during the scan.
-This file should live at ``<data_dir>/<subject_id>/design/<design_name>.csv``
-and should have columns for onset times, durations, conditions and parametric
-modulators to use for your fMRI models. Each row in this file corresponds to an
-event, where the term “event” is used broadly and can mean a “block” in a block
-design experiment.
+Copy Logfiles from study into your tutorial folder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-At a minimum the design file should contain columns for "run", "condition", and
-"onset"; it may also have columns for duration and "pmod-" columns that will be
-entered as parametric modulators. Note that the 'pmod-' columns correspond
-*roughly* to 'value' columns in a standard lyman design file, but are not the
-same thing. See `Mumford, Poline and Poldrack 2015`_ for a discussion on
-how parametric regressors and orthogonalization are handled between different
-fMRI packages. (TL;DR, Fitz enters these columns as pmods in SPM, while
-Lyman enters values as amplitudes.)
+For this tutorial, we will grab the original behavioral logfiles from their
+current location on the cluster. Unfortunately logfiles are not downloaded from
+CBSCentral automatically, and are copied around separately from the images.
+In your own study you will be responsible for copying logfiles to the server
+into your own StudyName/Subject_Data/Behavioral directory.
 
-An extremely simple design file would look like::
+.. code-block:: bash
+
+  # Make folders for the logfiles and design files
+  mkdir ../data/M87100094/logfiles ../data/M87100094/design
+
+  # Copy the logfiles for the tutorial subject to the data directory
+  cp /ncf/jwb/studies/PrisonReward/Active/Subject_Data/RSA_DD_Active/1819_2012_Aug_22_????.* ../data/M87100094/logfiles/
+
+
+There are two easy ways to specify the timing of fMRI information. One is to
+create a separate csv for each model you want to run with columns named 'run',
+'onset', and 'condition'. The other is to create one large design file
+containing several columns, and specify in your model which column should be
+used for which model. This essentially allows you to specify multiple
+combinations or onset, duration, and modulation from the same file, and know
+for sure that the model is specified correctly.
+
+By default the design files live in a directory called "design" inside each
+subject's data folder, i.e.
+``<data_dir>/<subject_id>/design/<design_name>.csv``.
+Each row in this file corresponds to an event, where the term “event” is used
+broadly and can mean a “block” in a block design experiment.
+
+For either method, the design file should contain a "run" column, and there
+should be only one design file for the whole task (i.e. not "Model1_run1",
+"Model1_run2"). Each row of your logfile should be a trial, and there
+should be columns for each trial that list the trial type (condition), trial
+time (onset). Additionally, there can be columns for trial duration (this
+defaults to zero), and additional values to use for parametric modulators
+(e.g. which option a participant chose, the value of their choice).
+
+Depending on the method, design files may contain several different columns
+for onset and duration that are specified as variables in the model file below
+(Method 1), or they may have columns explicitly labelled "condition", "onset",
+"duration" (Method 2).
+
+Regardless of the method you choose, make sure that your logfiles sort
+correctly when you list them with ``ls``, because the run column will be added
+based on the filenames' alphabetical order.
+
+
+Method 1: Single Large Design File for all Models
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you plan to use the single large design file method of specifying onsets,
+you can simply concatenate each of your existing csvs together. For example,
+the following command will combine all the logfiles into a single csv that can
+be used as a design file.
+
+.. code-block:: bash
+
+  cat ../data/M87100094/logfiles/*.csv > ../data/M87100094/design/DD.csv
+
+When using Method 1, the model file below must contain variables for "onset-col"
+and "condition-col", and may also optionally specify "duration-col" and
+"pmod-cols" columns. If "duration-col" is set to an integer instead of a string
+(i.e. 0 or 4) that value will be used for all events.
+
+For the model below in this tutorial, we'll use method 1.
+
+
+Method 2: ``log2design`` for separate, model-specific design files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some people prefer to have separate design files for each model - this is the
+Lyman way and allows for exact model compatibility, and also lets you see
+exactly what the onsets will look like.
+
+For simple designs where most of what you want already exists in your logfiles,
+fitz includes a simple script called ``log2design.py`` that will select
+and split up your full logfile into a "long" style csv with appropriate
+columns.
+
+*If your logfiles don't have appropriate columns already, you won't be able to
+use the script helper and will have to make your own design files, or create new
+logfiles that include these columns.*
+
+An extremely simple design file in the style of separate design files would
+look like::
 
     run, condition, onset
     1, sooner, 0
     1, sooner, 12
     2, sooner, 0
     2, later, 12
-
-For simple designs where most of what you want already exists in your logfiles,
-fitz includes a simple script called ``textOnsets2Long.py`` that will select
-and split up your full logfile into a "long" style csv with appropriate
-columns. This assumes that each row of your logfile is a trial, and that there
-are columns that list the trial type (condition), trial time (onset), and trial
-duration (this defaults to zero), and additional values to use for parametric
-modulators (i.e. which option a particpant chose, the value of their choice).
-
-*If your logfiles don't have appropriate columns already, you won't be able to
-use the script helper and will have to make your own design files, or create new
-logfiles that include these columns.*
-
-To use it, specify which of the column names in your logfile map to the
-appropriate columns (condition, onset, duration, pmod) and list the logfiles.
-Make sure that your logfiles sort correctly when you list them with ``ls``,
-because the run column will be added based on the filenames' alphabetical order.
 
 For this DD task, we will map the following columns from the logfiles and
 create a model file in *data*/{subject_id}/design/**DD-1.1.Choice.py**:
@@ -355,21 +430,23 @@ create a model file in *data*/{subject_id}/design/**DD-1.1.Choice.py**:
 
 .. code-block:: bash
 
-    # Make folders for the logfiles and design files
-    mkdir ../data/M87100094/logfiles ../data/M87100094/design
-
-    # Copy the logfiles for the tutorial subject to the data directory
-    cp /ncf/jwb/studies/PrisonReward/Active/Subject_Data/RSA_DD_Active/1819_2012_Aug_22_????.* ../data/M87100094/logfiles/
-
-    # Create the design files using the textOnsets2long script (or do it yourself)
-    textOnsets2long.py ../data/M87100094/logfiles/*.csv --out ../data/M87100094/design/DD-Model1.csv --condition-col choice --onset-col cuesTime --duration-col trialResp.rt --pmods-col choiceInt
+  # Create the design files using the textOnsets2long script (or do it yourself)
+  textOnsets2long.py ../data/M87100094/logfiles/*.csv --out ../data/M87100094/design/DD-Model1.csv --condition-col choice --onset-col cuesTime --duration-col trialResp.rt --pmods-col choiceInt
 
 Models may be as complicated (or simple) as you want, and you should feel free
-to create the csv yourself without the help of ``textOnsets2long.py``.
+to create the csv yourself without the help of ``log2design.py``.
 
 Waskom's `Lyman Documentation`_ also has more info on the design file and
 additional regressors file where post-convolved regressors for each TR may also
 be added to the model.
+
+.. note:: Note that the 'pmod-' columns correspond *roughly* to 'value' columns
+          in a standard lyman design file, but are not the same thing. See
+          `Mumford, Poline and Poldrack 2015`_ for a discussion on how
+          parametric regressors and orthogonalization are handled between
+          different fMRI packages. (TL;DR, Fitz enters these columns as pmods in
+          SPM, while Lyman enters values as amplitudes.)
+
 
 Model Options (Design File and Contrasts)
 ------------------------------------------
@@ -386,7 +463,14 @@ in the
 
 .. code-block:: python
 
-    design_file = 'DD-1.1.Choice.csv'
+    design_file = 'DD.csv'
+
+    conditions = ['sooner', 'later']
+    condition_col = 'choice'
+    onset_col = 'cuesTime'
+    duration_col = 'trialResp.rt'
+    pmod_cols = ['choiceInt']
+
     contrasts = [
       ('all trials', ['sooner', 'later'], [1, 1]),                # 1
       ('choice',     ['soonerxchoice^1', 'laterxchoice^1'], [1])  # 2

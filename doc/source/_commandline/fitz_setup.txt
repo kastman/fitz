@@ -1,0 +1,7 @@
+Fitz: Version 0.0.1.dev
+usage: fitz setup [-h]
+
+setup a new fitz directory
+
+optional arguments:
+  -h, --help  show this help message and exit
