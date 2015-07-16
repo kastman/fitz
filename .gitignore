@@ -4,3 +4,7 @@ data
 .DS_Store
 analysis
 ._*
+doc/build
+build
+dist
+fitz.egg-info
