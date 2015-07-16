@@ -51,6 +51,13 @@ help:
 clean:
 	rm -rf $(BUILDDIR)/*
 
+cmdline:
+	mkdir -p source/_commandline
+	python ../scripts/fitz setup -h > source/_commandline/fitz_setup.txt
+	python ../scripts/fitz install -h > source/_commandline/fitz_install.txt
+	python ../scripts/fitz run -h > source/_commandline/fitz_run.txt
+	python ../scripts/log2design.py -h > source/_commandline/log2design.txt
+
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
@@ -192,5 +199,5 @@ pseudoxml:
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
 
 upload:
-	rsync -az $(BUILDDIR)/html/ fas.harvard.edu:~/public_html/fitz
+	rsync -avz $(BUILDDIR)/html/ fas.harvard.edu:~/public_html/fitz
 	@echo "Uploaded to Harvard webspace"

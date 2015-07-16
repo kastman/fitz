@@ -61,7 +61,7 @@ if __name__ == "__main__":
         install_requires=['numpy', 'scipy', 'pandas', 'nipype', 'nibabel',
                           'pyxnat', 'httplib2'],
         packages=find_packages(exclude=['doc']),  #['fitz', 'fitz.tools'],
-        scripts=['scripts/fitz'],
+        scripts=['scripts/fitz', 'scripts/log2design.py'],
         classifiers=[
                      'Development Status :: 2 - Pre-Alpha',
                      'Intended Audience :: Science/Research',

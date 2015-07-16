@@ -1,0 +1,26 @@
+usage: log2design.py [-h] [--out OUT] [--verbose] [--pmod-name PMOD_NAME]
+                     [--conditions CONDITIONS [CONDITIONS ...]]
+                     [--condition-col CONDITION_COL]
+                     [--duration-col DURATION_COL] [--onset-col ONSET_COL]
+                     [--pmods-col [PMODS_COL [PMODS_COL ...]]]
+                     [--run-col RUN_COL] [--drop-cols DROP_COLS]
+                     onsets_files [onsets_files ...]
+
+positional arguments:
+  onsets_files          List of FSL EV onsets to convert
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --out OUT, -o OUT     Output filename.
+  --verbose, -v         increase output verbosity
+  --pmod-name PMOD_NAME
+                        Name to use when writing FSL Amplitude as SPM
+                        parametric modulator
+  --conditions CONDITIONS [CONDITIONS ...], -c CONDITIONS [CONDITIONS ...]
+  --condition-col CONDITION_COL
+  --duration-col DURATION_COL
+  --onset-col ONSET_COL
+  --pmods-col [PMODS_COL [PMODS_COL ...]]
+  --run-col RUN_COL
+  --drop-cols DROP_COLS
+                        Should we drop pre-named columns
