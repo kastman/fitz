@@ -10,21 +10,4 @@ Fitz provides many of the wrappings that lyman created in a way that allows
 people to spend their time running reproducible pipelines instead of messing
 around re-writing boilerplate.
 
-Documentation Contents
-----------------------
-
-.. toctree::
-   :maxdepth: 2
-
-   workflows
-   tutorial_nwlabs
-   creating_fitz_pipelines
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
 .. _Lyman : http://stanford.edu/~mwaskom/software/lyman
