@@ -246,10 +246,13 @@ is (for better or worse) a little more flexible.
 Setup Workflow Preprocessing Options
 -------------------------------------
 
-Next, configure the pattern for choosing functional and structural images,
-and add any other preprocessing options.
+Next, configure parameters for the preprocessing workflow and add it to
+**<experiment_name>.py**. These options are specific to your study and you'll
+have to know a little about your images to set them correctly once you're done
+following the tutorial.
 
-Add these config variables to your DD.py experiment file:
+Add these config variables to your DD.py experiment file. I'll explain below
+how to determine them:
 
 .. code-block:: python
 
@@ -259,27 +262,78 @@ Add these config variables to your DD.py experiment file:
     func_template = "{subject_id}/images/*dd*"
     anat_template = "{subject_id}/images/*mprage*"
 
-    ## TODO Add sanity check that ensures these are true
+    # Image Params
+    n_runs = 3  # Expected number of runs
+    TR = 2.5  # Repetition Time (sec)
+    interleaved = True  # Order of slice acquisition, false for sequential acquisition
+    slice_order = 'up'  # Direction of slice acquisition
+    num_slices = 33  # Number of slices
 
-    ## TODO Add motion_correct = True
-    ## TODO Print default options
-
-    n_runs = 3
-    TR = 2.5
-    temporal_interp = True
-    interleaved = False
-    slice_order = 'up'
-    num_slices = 33
-    smooth_fwhm = 6
-    hpcutoff = 120
-    frames_to_toss = 0
+    # Processing Params
+    temporal_interp = True  # Perform slicetiming (temporal interpolation)?
+    smooth_fwhm = 6  # Size of smoothing kernel (mm)
+    hpcutoff = 120  # Highpass Filter cutoff (sec)
+    frames_to_toss = 0  # Frames / volumes to remove from start of each run
 
     # Default Model Parameters
     # -------------------------
 
-    bases = {'hrf': {'derivs': [0, 0]}}
+    bases = {'hrf': {'derivs': [0, 0]}}  # Options for model basis functions
     estimation_method = 'Classical'
     input_units = output_units = 'secs'
+
+## TODO Add sanity check that ensures these are true
+## TODO Add motion_correct = True
+## TODO Print default options
+
+
+
+
+
+To specify which nifti files to use as functional and structural images you need
+to provide a "pattern" that can be used to grab them. Functional images usually
+have "BOLD", "EPI", or the task name in their series description (and therefore
+in their nii filename). Structural / Anatomical images typically have either
+"T1", "MPRAGE" or "MEMPRAGE" depending on the specific sequence that was used.
+
+Image parameters are available in the scan parameter pdf created when you first
+set up your study, and also in the header information of dicom files and nifti
+images created with the ``dcmstack --embed-meta`` flag (the xnatconvert workflow
+does this).
+
+To check a few of these values for the first task run, type:
+
+.. code-block:: bash
+
+  img=../data/M87100094/images/010-ddt_v01_r03.nii
+
+  nitool lookup RepetitionTime $img  # TR
+  >  2500.0
+
+  nitool lookup CsaImage.NumberOfImagesInMosaic $img  # num_slices
+  >  33
+
+  nitool lookup CsaImage.MosaicRefAcqTimes -i 0,0,0,0 $img  # interleaved & slice_order
+  >  [0.0, 1292.50000001, 77.49999998, 1370.0, ... 2435.0, 1217.5]
+
+Be sure to convert RepetitionTime to seconds. Also, the Mosaic Acquisition Times
+tell you that A) the slice order was interleaved (the times are not sequential)
+and that the order was increasing - slice 0 is also time 0 (the start of the
+TR), instead of time 2435 (the end of the TR). (The ``-i 0,0,0,0`` simply asks
+for the reference times of the first, representative volume).
+
+For more info on viewing the metadata in a nifti header, see ``nitool dump -h``,
+``nitool -h``, or `looking up dicomstack metadata`_. Also note that the
+*CsaImage* headers are Siemans specific and may not generalize to other scanner
+manufacturers.
+
+.. warning:: Setting image parameter information incorrectly will perform the
+             preprocessing invalidly! Take the time to **double check these
+             values**, even if you think you know them.
+
+A future version may be able to infer some of these from the dicom header
+automatically, but that's not released yet, and you should know how to look
+image info up anyway.
 
 The func_template and struct_template must be set, even if options
 for func_pattern and struct_pattern were set already for xnat_convert. This is
@@ -288,24 +342,12 @@ preproc workflow doesn't "know" about the xnat_convert workflow. It's important
 to be able to set them separately, but I might add an option to compbine them
 in a future release.
 
-These "template" options are used to grab nifti images from the data
-directory depending on how the file names were created - usually using the
-series description from the dicom header. Check out your data directory to
-look at the images and make sure you're grabbing the right ones.
-
-TR is the Repetition Time, which should be specified in seconds (it is often
-shown in scan parameter sheets in ms). The number of slices can be found on
-the parameter sheet or by looking at the functional images with tools to view
-the nifti header (``fslhd``, ``3dinfo``, or ``SPM --> Display Image``).
-
-One additional caveat is that slice timing can be confusing - the scan parameter
-sheets from our Siemans scanner always list a *Multi-slice mode* of
-"Interleaved", even when slices are acquired sequentially. The correct value to
-look at is the *Series* value directly below it, which will either be
-"interleaved", "ascending" or "descending". Finally to completely convince
-yourself, you can look at the Siemans DICOM header field
-*CsaImage.MosaicRefAcqTimes* to see slice acquisition times.  Lots more helpful
-info is at `Harvard CBS FAQ slice info`_.
+One additional caveat when using the Parameter pdf sheet instead of pulling
+directly from the images is that the *Multi-slice mode* of option is **always**
+set to "Interleaved", even when slices are acquired sequentially. The correct
+value to look at is the *Series* value directly below it, which will either be
+"interleaved", "ascending" or "descending". Additional slicetiming info is at
+`Harvard CBS FAQ slice info`_.
 
 Finally, set some default options for modeling. In this case we will use SPM
 defaults for the hemodynamic response functions ('hrf') in our general linear
@@ -321,7 +363,9 @@ Copy Logfiles from study into your tutorial folder
 
 For this tutorial, we will grab the original behavioral logfiles from their
 current location on the cluster. Unfortunately logfiles are not downloaded from
-CBSCentral automatically, and are copied around separately from the images.
+CBSCentral automatically, and are copied / moved around separately from the
+images.
+
 In your own study you will be responsible for copying logfiles to the server
 into your own StudyName/Subject_Data/Behavioral directory.
 
@@ -334,13 +378,14 @@ into your own StudyName/Subject_Data/Behavioral directory.
   cp /ncf/jwb/studies/PrisonReward/Active/Subject_Data/RSA_DD_Active/1819_2012_Aug_22_????.* ../data/M87100094/logfiles/
 
 
+Design File Information
+~~~~~~~~~~~~~~~~~~~~~~~~
+
 There are two easy ways to specify the timing of fMRI information. One is to
-create a separate csv for each model you want to run with columns named 'run',
-'onset', and 'condition'. The other is to create one large design file
-containing several columns, and specify in your model which column should be
-used for which model. This essentially allows you to specify multiple
-combinations or onset, duration, and modulation from the same file, and know
-for sure that the model is specified correctly.
+create one large design file containing multiple columns for onsets, multiple
+columns for durations, and specify which columns to use in your model files
+(Method 1). The other is to create a separate csv for each model you want to run
+with columns named exactly 'run', 'onset', and 'condition' (Method 2).
 
 By default the design files live in a directory called "design" inside each
 subject's data folder, i.e.
@@ -348,18 +393,13 @@ subject's data folder, i.e.
 Each row in this file corresponds to an event, where the term “event” is used
 broadly and can mean a “block” in a block design experiment.
 
-For either method, the design file should contain a "run" column, and there
-should be only one design file for the whole task (i.e. not "Model1_run1",
-"Model1_run2"). Each row of your logfile should be a trial, and there
-should be columns for each trial that list the trial type (condition), trial
+For either method, the design file should contain a 'run' column, and there
+should be only one design file for the whole task (i.e. not 'Model1_run1',
+'Model1_run2'). Each row of the design file should be a trial, and there
+should be columns for each trial that list the trial type (condition) and trial
 time (onset). Additionally, there can be columns for trial duration (this
 defaults to zero), and additional values to use for parametric modulators
 (e.g. which option a participant chose, the value of their choice).
-
-Depending on the method, design files may contain several different columns
-for onset and duration that are specified as variables in the model file below
-(Method 1), or they may have columns explicitly labelled "condition", "onset",
-"duration" (Method 2).
 
 Regardless of the method you choose, make sure that your logfiles sort
 correctly when you list them with ``ls``, because the run column will be added
@@ -370,6 +410,7 @@ Method 1: Single Large Design File for all Models
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you plan to use the single large design file method of specifying onsets,
+and your log files contain all the information required (including run),
 you can simply concatenate each of your existing csvs together. For example,
 the following command will combine all the logfiles into a single csv that can
 be used as a design file.
@@ -377,6 +418,15 @@ be used as a design file.
 .. code-block:: bash
 
   cat ../data/M87100094/logfiles/*.csv > ../data/M87100094/design/DD.csv
+
+If your logfiles don't contain a run column, you can combine them with the
+design file helper ``log2design.py`` that comes with fitz. The following
+will combine the logfiles and add a 'run' column, while leaving in other columns
+that can be referenced from model files.
+
+.. code-block:: bash
+
+  log2design.py ../data/M87100094/logfiles/*.csv --out ../data/M87100094/design/DD.csv
 
 When using Method 1, the model file below must contain variables for "onset-col"
 and "condition-col", and may also optionally specify "duration-col" and
@@ -386,7 +436,7 @@ and "condition-col", and may also optionally specify "duration-col" and
 For the model below in this tutorial, we'll use method 1.
 
 
-Method 2: ``log2design`` for separate, model-specific design files
+Method 2: Separate, model-specific design files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Some people prefer to have separate design files for each model - this is the
@@ -395,8 +445,7 @@ exactly what the onsets will look like.
 
 For simple designs where most of what you want already exists in your logfiles,
 fitz includes a simple script called ``log2design.py`` that will select
-and split up your full logfile into a "long" style csv with appropriate
-columns.
+and stack logfile into a "long" style csv with appropriate columns.
 
 *If your logfiles don't have appropriate columns already, you won't be able to
 use the script helper and will have to make your own design files, or create new
@@ -411,8 +460,8 @@ look like::
     2, sooner, 0
     2, later, 12
 
-For this DD task, we will map the following columns from the logfiles and
-create a model file in *data*/{subject_id}/design/**DD-1.1.Choice.py**:
+For this DD task, we could map the following columns from the logfiles and
+create a model file in *data*/{subject_id}/design/**DD-1.1.Choice.csv**:
 
 .. cssclass:: table-striped
 
@@ -430,11 +479,12 @@ create a model file in *data*/{subject_id}/design/**DD-1.1.Choice.py**:
 
 .. code-block:: bash
 
-  # Create the design files using the textOnsets2long script (or do it yourself)
-  textOnsets2long.py ../data/M87100094/logfiles/*.csv --out ../data/M87100094/design/DD-Model1.csv --condition-col choice --onset-col cuesTime --duration-col trialResp.rt --pmods-col choiceInt
+  # Create a design file for Model1 using the log2design.py script (or do it yourself)
+  log2design.py ../data/M87100094/logfiles/*.csv --out ../data/M87100094/design/DD-Model1.csv --condition-col choice --onset-col cuesTime --duration-col trialResp.rt --pmods-col choiceInt
 
 Models may be as complicated (or simple) as you want, and you should feel free
-to create the csv yourself without the help of ``log2design.py``.
+to create the csv yourself without the help of ``log2design.py`` in the case
+of more complicated modeling, etc.
 
 Waskom's `Lyman Documentation`_ also has more info on the design file and
 additional regressors file where post-convolved regressors for each TR may also
@@ -454,12 +504,28 @@ Model Options (Design File and Contrasts)
 Information about specific models are listed in their own python files
 **<experiment_name>-<model_name>.py**. If you want a specific order of models
 (for example you're creating models at different onset times) you should
-list your model numbers explicitly.
+list your model numbers explicitly in the model name.
 
-Paste the following lines into a new file called DD-1.1.Choice.py to specify
-two contrasts - one for the main effect of all trials and one for the
-parametric modulator. The column names (e.g. 'sooner', 'later') must be values
-in the
+Paste the following lines into a new file called DD-1.1.Choice.py to specify a
+new model. For this tutorial we are specifying a model pulled from a large
+design file (method 1), where condition and onset columns are listed by the
+model instead of being named in the csv directly, so we need to add variables
+for them here.
+
+The column names (e.g. 'sooner', 'later') must be values in the conditions
+column; if no conditions are listed the model will use all of the values found
+in the condition_col. Note that this method precludes modeling different parts
+of a trial (cue presentation and response) within the same model; although those
+regressors are likely to be highly correlated and aren't recommended to be
+modeled together anyway unless they are significantly jittered. If that's the
+case you should construct the design file with them as two different rows and
+conditions / trial types; a long "Method 2" design file may be easier to read
+in that case.
+
+Additionally, we are also creating two contrasts - one for the main effect of
+all trials and one for the parametric modulator. The format of a contrast is
+a tuple of three values: the contrast name, contrast columns, and contrast
+weights for each of those columns.
 
 .. code-block:: python
 
@@ -485,8 +551,9 @@ Preproc
   and smoothing.
 
 Onsets
-  Converts the design file to binary Matlab .mat SPM-style multiple conditions
-  files.
+  SPM requires binary .mat files in a specific format. This workflow converts
+  the design file and design options from your model into properly formatted
+  SPM .mat multiple conditions files.
 
 Model
   Calculates artifacts, specifies a model design and estimates the model
@@ -500,12 +567,14 @@ Model
    want to use with the ``--model`` flag.
 
 
-Bonus: Alternative Models
---------------------------
+References
+-----------
 
-Exercise: Create a new design file with a different onset, and create a new
-model file called DD-Model2.py that uses it.
+For more information and to see all the parameters that can be set for each
+workflow, see the :doc:`documentation for the standard fMRI SPM pipe`.
 
+The `Lyman Documentation`_ contains more information on additional regressors
+and a few things that apply to fitz but haven't been discussed here.
 
 .. _Lyman Documentation : http://stanford.edu/~mwaskom/software/lyman/experiments.html#the-design-file
 .. _xnat : http://www.xnat.org
@@ -513,3 +582,4 @@ model file called DD-Model2.py that uses it.
 .. _Mumford, Poline and Poldrack 2015 : http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0126255
 .. _Neuroinformatics Research Group : http://neuroinfo.org
 .. _xnat_auth info : http://people.fas.harvard.edu/~kastman/nwlabs_pipeline/xnat_auth.html
+.. _looking up dicomstack metadata : http://dcmstack.readthedocs.org/en/latest/CLI_Tutorial.html#looking-up-meta-data
