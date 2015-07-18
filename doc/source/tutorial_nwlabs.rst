@@ -251,8 +251,8 @@ Next, configure parameters for the preprocessing workflow and add it to
 have to know a little about your images to set them correctly once you're done
 following the tutorial.
 
-Add these config variables to your DD.py experiment file. I'll explain below
-how to determine them:
+To begin, add these config variables to the **DD.py** experiment file to tell
+fitz how to find your functional and structural images:
 
 .. code-block:: python
 
@@ -262,6 +262,15 @@ how to determine them:
     func_template = "{subject_id}/images/*dd*"
     anat_template = "{subject_id}/images/*mprage*"
 
+Functional images usually have "BOLD", "EPI", or the task name in their series
+description (and therefore in their nii filename). Structural / Anatomical
+images typically have either "T1", "MPRAGE" or "MEMPRAGE" depending on the
+specific sequence that was used.
+
+Moving on, let's next add information about our runs to **DD.py**:
+
+.. code-block:: python
+
     # Image Params
     n_runs = 3  # Expected number of runs
     TR = 2.5  # Repetition Time (sec)
@@ -269,39 +278,20 @@ how to determine them:
     slice_order = 'up'  # Direction of slice acquisition
     num_slices = 33  # Number of slices
 
-    # Processing Params
-    temporal_interp = True  # Perform slicetiming (temporal interpolation)?
-    smooth_fwhm = 6  # Size of smoothing kernel (mm)
-    hpcutoff = 120  # Highpass Filter cutoff (sec)
-    frames_to_toss = 0  # Frames / volumes to remove from start of each run
-
-    # Default Model Parameters
-    # -------------------------
-
-    bases = {'hrf': {'derivs': [0, 0]}}  # Options for model basis functions
-    estimation_method = 'Classical'
-    input_units = output_units = 'secs'
 
 ## TODO Add sanity check that ensures these are true
 ## TODO Add motion_correct = True
 ## TODO Print default options
 
 
-
-
-
-To specify which nifti files to use as functional and structural images you need
-to provide a "pattern" that can be used to grab them. Functional images usually
-have "BOLD", "EPI", or the task name in their series description (and therefore
-in their nii filename). Structural / Anatomical images typically have either
-"T1", "MPRAGE" or "MEMPRAGE" depending on the specific sequence that was used.
-
 Image parameters are available in the scan parameter pdf created when you first
 set up your study, and also in the header information of dicom files and nifti
 images created with the ``dcmstack --embed-meta`` flag (the xnatconvert workflow
 does this).
 
-To check a few of these values for the first task run, type:
+To figure out what these paramters were for our images, we can check the
+relevant header info. Run the following in Terminal to look at the values for
+the first task image:
 
 .. code-block:: bash
 
@@ -316,11 +306,26 @@ To check a few of these values for the first task run, type:
   nitool lookup CsaImage.MosaicRefAcqTimes -i 0,0,0,0 $img  # interleaved & slice_order
   >  [0.0, 1292.50000001, 77.49999998, 1370.0, ... 2435.0, 1217.5]
 
-Be sure to convert RepetitionTime to seconds. Also, the Mosaic Acquisition Times
-tell you that A) the slice order was interleaved (the times are not sequential)
-and that the order was increasing - slice 0 is also time 0 (the start of the
-TR), instead of time 2435 (the end of the TR). (The ``-i 0,0,0,0`` simply asks
-for the reference times of the first, representative volume).
+Note that RepetitionTime is in milliseconds, so convert it to seconds in the
+experiment file.
+
+The "Mosaic" in these header keys refers to the way that multiple 2D slices are
+saved in a single dicom file - they're stored as one big 2D image and sliced up
+when they are converted to nifti. When you see "Mosaic" you can just think of a
+single volume.
+
+The Mosaic Acquisition Times tell you that A) the slice order was interleaved
+(the times are not sequential) and that the order was increasing - slice 0 is
+also time 0 (the start of the TR), instead of time 2435 (the end of the TR).
+(The ``-i 0,0,0,0`` simply asks for the reference times of the first,
+representative volume).
+
+One additional caveat when using the Parameter pdf sheet instead of pulling
+directly from the images is that the *Multi-slice mode* of option is **always**
+set to "Interleaved", even when slices are acquired sequentially. The correct
+value to look at is the *Series* value directly below it, which will either be
+"interleaved", "ascending" or "descending". Additional slicetiming info is at
+`Harvard CBS FAQ slice info`_.
 
 For more info on viewing the metadata in a nifti header, see ``nitool dump -h``,
 ``nitool -h``, or `looking up dicomstack metadata`_. Also note that the
@@ -335,24 +340,34 @@ A future version may be able to infer some of these from the dicom header
 automatically, but that's not released yet, and you should know how to look
 image info up anyway.
 
-The func_template and struct_template must be set, even if options
-for func_pattern and struct_pattern were set already for xnat_convert. This is
-because the xnat_convert is not the only way to convert nifti files, and the
-preproc workflow doesn't "know" about the xnat_convert workflow. It's important
-to be able to set them separately, but I might add an option to compbine them
-in a future release.
+Moving on, let's add more info about processing options to **DD.py**:
 
-One additional caveat when using the Parameter pdf sheet instead of pulling
-directly from the images is that the *Multi-slice mode* of option is **always**
-set to "Interleaved", even when slices are acquired sequentially. The correct
-value to look at is the *Series* value directly below it, which will either be
-"interleaved", "ascending" or "descending". Additional slicetiming info is at
-`Harvard CBS FAQ slice info`_.
+.. code-block:: python
 
-Finally, set some default options for modeling. In this case we will use SPM
-defaults for the hemodynamic response functions ('hrf') in our general linear
-model, and will specify the unit for our design files will be in seconds (as
-opposed to TRs).
+    # Processing Params
+    temporal_interp = True  # Perform slicetiming (temporal interpolation)?
+    smooth_fwhm = 6  # Size of smoothing kernel (mm)
+    hpcutoff = 120  # Highpass Filter cutoff (sec)
+    frames_to_toss = 0  # Frames / volumes to remove from start of each run
+
+The processing parameters listed (perform slicetiming, smooth with a 6mm FWHM
+kernel, use a high-pass filter of 120s and don't toss any discdacq (discarded
+acquisition) volumes
+
+Finally, set some default options for modeling, still in **DD.py**:
+
+.. code-block:: python
+
+    # Default Model Parameters
+    # -------------------------
+
+    bases = {'hrf': {'derivs': [0, 0]}}  # Options for model basis functions
+    estimation_method = 'Classical'
+    input_units = output_units = 'secs'
+
+In this case we will use SPM defaults for the hemodynamic response functions
+('hrf') in our general linear model, and will specify the unit for our design
+files will be in seconds (as opposed to TRs).
 
 
 Copy logfiles and create the Design File
