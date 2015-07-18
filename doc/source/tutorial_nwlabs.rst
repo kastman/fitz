@@ -183,8 +183,8 @@ add the following lines to the experiment file DD.py::
     # Xnat Download and Convert
     # --------------------------
     xnat_project = 'Buckholtz_RSA'
-    download_patterns = ['mprage%RMS', 'ddt%']
-    server = 'https://cbscentral.rc.fas.harvard.edu'
+    series_descriptions = ['mprage*RMS', 'dd*']
+    server_alias = 'cbscentral'
 
 If you're working on your own study, you'll need to change and specify these
 so that the patterns match up. The xnat_project is found on the main project
@@ -201,7 +201,11 @@ Discounting Task) in their description.
 
 .. image:: _static/images/XnatPatterns.png
 
-This is a database-style search so you use '%' for a wildcard instead of '*'.
+You also need to list which xnat server you want to connect to. For everything
+in NWLabs, this will be 'cbscentral' - this should already be set up using
+the xnat_auth tool to create a small file to hold your server username and
+password using either the xnatconvert workflow or ArcGet.py (below). For more
+info on how to set this up if it's not already, see `xnat_auth info`_.
 
 You can now run the fitz workflow to download data::
 
