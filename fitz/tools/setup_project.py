@@ -219,7 +219,7 @@ def do_prompt(d, key, text, default=None, validator=nonempty):
     d[key] = x
 
 
-def main():
+def main(args):
     d = dict()
 
     if not color_terminal():

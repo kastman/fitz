@@ -50,13 +50,13 @@ live. Open a Terminal and type:
 
 .. code-block:: bash
 
-    cd /ncf/jwb/studies/PrisonReward/Active/Analyses
-    mkdir -p spmFMRI/fitz
-    cd spmFMRI/fitz
+    mkdir -p spmFMRI_tutorial/fitz
+    cd spmFMRI_tutorial/fitz
     fitz setup
 
-The script will ask questions to help you get started. You can just type enter
-after each one to accept the defaults::
+The script will ask questions to help you get started; enter the project name
+and experiment name, and type enter for the other options to accept the
+defaults::
 
     Let's set up your project.
 
@@ -65,7 +65,7 @@ after each one to accept the defaults::
 
     Please use relative paths.
 
-    > Project name: PrisonReward
+    > Project name: FitzTutorial
     > Default experiment: DD
     > Data tree path [../data]:
     > Analysis tree path [../analysis]:
@@ -114,6 +114,7 @@ into the experiment file:
 
     # Workflow Parameters
     # --------------------
+    workflow = "fitz_nwlabs_spm_pipeline"
     workflow_src = "https://github.com/kastman/fitz_nwlabs_spm_pipeline.git"
     workflow_version = "0.0.1.dev"
 
@@ -144,20 +145,15 @@ A subjects.txt file in the fitz directory is used to list all the subjects
 that should be included. For this tutorial we'll only process a single subject,
 so create a text file with one line::
 
-    M87100094
+    FITZ1
 
 By default ``fitz run`` will perform the processing on all subjects in the
 subjects.txt file, but there are several subject-related options. You can use
-``--subjects M87100094`` to specify which subjects to run (in case you need to
+``--subjects FITZ1`` to specify which subjects to run (in case you need to
 re-run just a few after making fixes, and you can also create other group files
 called **subjects-{group_name}.txt** that can be run with the ``fitz run
 --group group_name`` option.  You can see all the options for ``fitz run``
 :ref:`here <commandline>`.
-
-.. note:: When downloading from CBS Central, the subject id must be
-          *exactly* the same as the "MR Session" id for the download to work
-          correctly. I hope to fix this soon, but for the time being use the MR
-          Session as your subject identifier.
 
 
 Prepare images in the *data* directory
@@ -182,7 +178,7 @@ add the following lines to the experiment file DD.py::
 
     # Xnat Download and Convert
     # --------------------------
-    xnat_project = 'Buckholtz_RSA'
+    xnat_project = 'FitzTutorial'
     series_descriptions = ['mprage*RMS', 'dd*']
     server_alias = 'cbscentral'
 
@@ -233,13 +229,13 @@ is (for better or worse) a little more flexible.
     cd ../data
 
     # Use ArcGet.py to download T1 & BOLD dicoms from CBS Central
-    ArcGet.py -a cbscentral -s M87100094 -r MPRAGE,BOLD
+    ArcGet.py -a cbscentral -s FITZ1 -r MPRAGE,BOLD
 
     # Create a folder for the .nii images
-    mkdir ../data/M87100094/images
+    mkdir ../data/FITZ1/images
 
     # Use dcmstack to convert images from DICOM to Nifti format
-    dcmstack --embed-meta --dest-dir ../data/M87100094/images --output-ext .nii ../data/M87100094/RAW
+    dcmstack --embed-meta --dest-dir ../data/FITZ1/images --output-ext .nii ../data/FITZ1/RAW
 
     # don't forget to change back to the fitz directory when you're done
     cd ../fitz
@@ -262,7 +258,6 @@ fitz how to find your functional and structural images:
 
     # Preproc Parameters
     # -------------------
-
     func_template = "{subject_id}/images/*dd*"
     anat_template = "{subject_id}/images/*mprage*"
 
@@ -299,7 +294,7 @@ the first task image:
 
 .. code-block:: bash
 
-  img=../data/M87100094/images/010-ddt_v01_r03.nii
+  img=../data/FITZ1/images/010-ddt_v01_r03.nii
 
   nitool lookup RepetitionTime $img  # TR
   >  2500.0
@@ -354,9 +349,11 @@ Moving on, let's add more info about processing options to **DD.py**:
     hpcutoff = 120  # Highpass Filter cutoff (sec)
     frames_to_toss = 0  # Frames / volumes to remove from start of each run
 
-The processing parameters listed (perform slicetiming, smooth with a 6mm FWHM
-kernel, use a high-pass filter of 120s and don't toss any discdacq (discarded
-acquisition) volumes
+The processing parameters listed are standard options: perform slicetiming,
+smooth with a 6mm FWHM kernel, use a high-pass filter of 120s and don't
+toss any discdacq (discarded acquisition) volumes. For more information on
+available options, you can see the :doc:`documentation for the standard fMRI
+SPM pipe`.
 
 Finally, set some default options for modeling, still in **DD.py**:
 
@@ -391,10 +388,10 @@ into your own StudyName/Subject_Data/Behavioral directory.
 .. code-block:: bash
 
   # Make folders for the logfiles and design files
-  mkdir ../data/M87100094/logfiles ../data/M87100094/design
+  mkdir ../data/FITZ1/logfiles ../data/FITZ1/design
 
   # Copy the logfiles for the tutorial subject to the data directory
-  cp /ncf/jwb/studies/PrisonReward/Active/Subject_Data/RSA_DD_Active/1819_2012_Aug_22_????.* ../data/M87100094/logfiles/
+  cp /ncf/jwb/resources/fitz_tutorial/logfiles/* ../data/FITZ1/logfiles/
 
 
 Design File Information
@@ -429,38 +426,31 @@ Method 1: Single Large Design File for all Models
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you plan to use the single large design file method of specifying onsets,
-and your log files contain all the information required (including run),
-you can simply concatenate each of your existing csvs together. For example,
-the following command will combine all the logfiles into a single csv that can
-be used as a design file.
+you can combine them with the design file helper ``log2design.py`` that comes
+with fitz. The following will combine the logfiles and add a 'run' column,
+while leaving in other columns that can be referenced from model files. On a
+side note, if your log files contain all the information required (including
+run), you can also just concatenate each of your existing csvs together with
+``cat``:
 
 .. code-block:: bash
 
-  cat ../data/M87100094/logfiles/*.csv > ../data/M87100094/design/DD.csv
+  log2design.py ../data/FITZ1/logfiles/*.csv --out ../data/FITZ1/design/DD-Combined.csv
 
-If your logfiles don't contain a run column, you can combine them with the
-design file helper ``log2design.py`` that comes with fitz. The following
-will combine the logfiles and add a 'run' column, while leaving in other columns
-that can be referenced from model files.
+  # Or, if your logfiles already contain a "run" column...
+  cat ../data/FITZ1/logfiles/*.csv > ../data/FITZ1/design/DD-Combined.csv
 
-.. code-block:: bash
-
-  log2design.py ../data/M87100094/logfiles/*.csv --out ../data/M87100094/design/DD.csv
-
-When using Method 1, the model file below must contain variables for "onset-col"
-and "condition-col", and may also optionally specify "duration-col" and
-"pmod-cols" columns. If "duration-col" is set to an integer instead of a string
-(i.e. 0 or 4) that value will be used for all events.
-
-For the model below in this tutorial, we'll use method 1.
+.. note:: Don't forget to remove the header rows from the bottom two runs if
+          you use ``cat``.
 
 
 Method 2: Separate, model-specific design files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Some people prefer to have separate design files for each model - this is the
-Lyman way and allows for exact model compatibility, and also lets you see
-exactly what the onsets will look like.
+Lyman style and allows for exact model compatibility, and also lets you see
+exactly what the onsets will look like. For the model below in this tutorial
+we will use Method 1, but feel free to experiment.
 
 For simple designs where most of what you want already exists in your logfiles,
 fitz includes a simple script called ``log2design.py`` that will select
@@ -499,7 +489,7 @@ create a model file in *data*/{subject_id}/design/**DD-1.1.Choice.csv**:
 .. code-block:: bash
 
   # Create a design file for Model1 using the log2design.py script (or do it yourself)
-  log2design.py ../data/M87100094/logfiles/*.csv --out ../data/M87100094/design/DD-Model1.csv --condition-col choice --onset-col cuesTime --duration-col trialResp.rt --pmods-col choiceInt
+  log2design.py ../data/FITZ1/logfiles/*.csv --out ../data/FITZ1/design/DD-Model1.csv --condition-col choice --onset-col cuesTime --duration-col trialResp.rt --pmods-col choiceInt
 
 Models may be as complicated (or simple) as you want, and you should feel free
 to create the csv yourself without the help of ``log2design.py`` in the case
@@ -523,13 +513,14 @@ Model Options (Design File and Contrasts)
 Information about specific models are listed in their own python files
 **<experiment_name>-<model_name>.py**. If you want a specific order of models
 (for example you're creating models at different onset times) you should
-list your model numbers explicitly in the model name.
+list your model numbers explicitly in the model name. *Model Names are used
+in directories, so don't include spaces or special characters*.
 
-Paste the following lines into a new file called DD-1.1.Choice.py to specify a
+Paste the following lines into a new file called DD-1_1_Choice.py to specify a
 new model. For this tutorial we are specifying a model pulled from a large
 design file (method 1), where condition and onset columns are listed by the
-model instead of being named in the csv directly, so we need to add variables
-for them here.
+model instead of being named in the csv directly, so we specify which columns
+are used for the onset time, duration, etc.
 
 The column names (e.g. 'sooner', 'later') must be values in the conditions
 column; if no conditions are listed the model will use all of the values found
@@ -537,9 +528,12 @@ in the condition_col. Note that this method precludes modeling different parts
 of a trial (cue presentation and response) within the same model; although those
 regressors are likely to be highly correlated and aren't recommended to be
 modeled together anyway unless they are significantly jittered. If that's the
-case you should construct the design file with them as two different rows and
-conditions / trial types; a long "Method 2" design file may be easier to read
-in that case.
+case you should construct the design file with each part of the trial listed
+in a different row and different conditions / trial types; a long "Method 2"
+design file is recommended in that case.
+
+If "duration-col" is set to an integer instead of a string (i.e. 0 or 4) that
+value will be used for all events.
 
 Additionally, we are also creating two contrasts - one for the main effect of
 all trials and one for the parametric modulator. The format of a contrast is
@@ -548,18 +542,20 @@ weights for each of those columns.
 
 .. code-block:: python
 
-    design_file = 'DD.csv'
+  design_name = 'DD-Combined'
 
-    conditions = ['sooner', 'later']
-    condition_col = 'choice'
-    onset_col = 'cuesTime'
-    duration_col = 'trialResp.rt'
-    pmod_cols = ['choiceInt']
+  conditions = ['sooner', 'later']
+  condition_col = 'choiceStr'
+  onset_col = 'cuesTime'
+  duration_col = 'trialResp.rt'
+  # pmod_cols = ['choiceInt']
 
-    contrasts = [
-      ('all trials', ['sooner', 'later'], [1, 1]),                # 1
-      ('choice',     ['soonerxchoice^1', 'laterxchoice^1'], [1])  # 2
-    ]
+  contrasts = [
+    ('all trials', ['sooner', 'later'], [1, 1]),  # 1
+    ('sooner vs later', ['sooner', 'later'], [1, -1]),  # 2
+    ('later vs sooner', ['sooner', 'later'], [-1, 1]),  # 3
+    # ('choice',     ['soonerxchoice^1', 'laterxchoice^1'], [1, 1])  # 4
+  ]
 
 
 Run Workflows
@@ -580,7 +576,7 @@ Model
 
 .. code-block:: bash
 
-    fitz run -w preproc onsets model --model 1.1.Choice
+    fitz run -w preproc onset model --model 1_1_Choice
 
 .. note:: N.B. There is no default model, so you must specify which one you
    want to use with the ``--model`` flag.

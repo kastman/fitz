@@ -36,6 +36,11 @@ def load_onsets(onsets_files, args):
         if 'run' not in run.columns:
             run['run'] = i + 1
 
+        # Drop any columns thar are entirely empty (for vanity)
+        for col_name, col in run.iteritems():
+            if col.isnull().all():
+                del(run[col_name])
+
         runs.append(run)
 
     return concat(runs, ignore_index=True)
