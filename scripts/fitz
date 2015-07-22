@@ -9,7 +9,7 @@ import argparse
 import imp
 import fitz
 import os.path as op
-from nipype import config
+from nipype import config, logging
 import subprocess
 
 print 'Fitz: Version %s' % fitz.version
@@ -38,26 +38,32 @@ def run(args):
     else:
         exp_name = args.experiment
 
-    exp_base = exp_name
-    if args.model is not None:
-        exp_name = "-".join([exp_base, args.model])
+    exp['exp_name'] = exp_name
+    exp['model_name'] = args.model
 
     # Set roots of output storage
     project['analysis_dir'] = op.join(project["analysis_dir"], exp_name)
-    project['working_dir'] = op.join(project["working_dir"], exp_name)
+    project['working_dir'] = op.join(project["working_dir"], exp_name,
+                                     args.model)
 
     config.set("execution", "crashdump_dir", project["crash_dir"])
-    # nipype.config.set("logging", "filemanip_level", 'DEBUG')
-    # nipype.config.enable_debug_mode()
-    # nipype.logging.update_logging(nipype.config)
+    if args.verbose > 0:
+        config.set("logging", "filemanip_level", 'DEBUG')
+        config.enable_debug_mode()
+        logging.update_logging(config)
 
-    setup_dirs(project['analysis_dir'], exp_base, exp_name, subject_list)
+    if not op.exists(project['analysis_dir']):
+        os.makedirs(project['analysis_dir'])
 
     stream_dir = os.path.join(os.environ['FITZ_DIR'], exp['workflow'],
                               'workflows')
     if not op.isdir(stream_dir):
-        raise IOError("Run `fitz install` to set up your stream of workflows,"
-                      "%s does not exist." % stream_dir)
+        missing_pipe = 'raise'
+        if missing_pipe == 'install':
+            install(args)
+        else:
+            raise IOError("Run `fitz install` to set up your stream of "
+                          "workflows, %s does not exist." % stream_dir)
     sys.path.insert(0, stream_dir)
     for wf_name in args.workflows:
         try:
@@ -71,21 +77,6 @@ def run(args):
         workflow = wf_module.workflow(
             project, params, args, subj_source)
         fitz.run_workflow(workflow, wf_name, args)
-
-
-def setup_dirs(analysis_dir, exp_base, exp_name, subject_list):
-    """Create symlinks to the preproc directory for altmodels"""
-    if not op.exists(analysis_dir):
-        os.makedirs(analysis_dir)
-    if exp_base != exp_name:
-        for subj in subject_list:
-            subj_dir = op.join(analysis_dir, subj)
-            if not op.exists(subj_dir):
-                os.makedirs(subj_dir)
-            link_dir = op.join(analysis_dir, subj, "preproc")
-            if not op.exists(link_dir):
-                preproc_dir = op.join("../..", exp_base, subj, "preproc")
-                os.symlink(preproc_dir, link_dir)
 
 
 def install(args):
@@ -113,6 +104,7 @@ def install(args):
 def parse_args(arglist):
     """Take an arglist and return an argparse Namespace."""
     parser = argparse.ArgumentParser()
+    parser.add_argument('--verbose', '-v', action='store_true')
     subparsers = parser.add_subparsers()
     run_parser = fitz.tools.run_parser(subparsers)
     run_parser.set_defaults(func=run)

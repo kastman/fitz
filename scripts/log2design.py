@@ -11,10 +11,8 @@ from numpy import empty
 
 def main(args):
     runs_df = load_onsets(args.onsets_files, args)
-
+    print("Saving designfile (%d rows) to %s" % (runs_df.shape[0], args.out))
     runs_df.to_csv(args.out, index=False)
-
-    exit()
 
 
 def load_onsets(onsets_files, args):
@@ -22,50 +20,57 @@ def load_onsets(onsets_files, args):
     Return one concatenated pandas dataframe with all trials as rows."""
     runs = []
     for i, fid in enumerate(onsets_files):
-        cols = ['run', 'onset', 'duration', 'condition']
-
         run = read_csv(fid)
 
-        # Cleanup any columns that might exist if we don't want them
-        if args.drop_cols:
-            for col in cols:
-                if col in run.columns:
-                    run.drop(col, axis=1, inplace=True)
+        # If any column arguments were given, convert to a lyman-like design
+        # with explicitly named columns. Else, just concatenate and add 'run'.
+        if (args.onset_col or args.duration_col or args.condition_col or
+                args.pmods_col):
+            run = rename_columns(args, run)
+            condition_col = 'condition'
+            # Remove blanks
+            run = run[run[condition_col].notnull()]
 
+        # Add fn and run to designfile
         run['filename'] = fid.name
-
-        columns = {}
-
-        columns[args.onset_col] = 'onset'
-
-        if args.run_col:
-            columns[args.run_col] = 'run'
-        else:
+        if 'run' not in run.columns:
             run['run'] = i + 1
 
-        columns[args.condition_col] = 'condition'
-
-        if args.duration_col:
-            columns[args.duration_col] = 'duration'
-        else:
-            run['duration'] = 0
-
-        if len(args.pmods_col):
-            for pmod in args.pmods_col:
-                columns[pmod] = 'pmod-' + pmod
-                cols.append('pmod-' + pmod)
-
-        print(columns)
-        print(run.columns)
-        print(len(run.columns))
-
-        run.rename(columns=columns, inplace=True)
-
-        runs.append(run[cols][run['condition'].notnull()])
-
-    print(runs)
+        runs.append(run)
 
     return concat(runs, ignore_index=True)
+
+
+def rename_columns(args, run):
+    cols = ['run', 'onset', 'duration', 'condition']
+
+    # Cleanup any columns that might exist if we don't want them
+    if args.drop_cols:
+        for col in cols:
+            if col in run.columns:
+                run.drop(col, axis=1, inplace=True)
+
+    columns = {}
+
+    columns[args.onset_col] = 'onset'
+    columns[args.condition_col] = 'condition'
+
+    if args.run_col:
+        columns[args.run_col] = 'run'
+
+    if args.duration_col:
+        columns[args.duration_col] = 'duration'
+    else:
+        run['duration'] = 0
+
+    if len(args.pmods_col):
+        for pmod in args.pmods_col:
+            columns[pmod] = 'pmod-' + pmod
+            cols.append('pmod-' + pmod)
+
+    run.rename(columns=columns, inplace=True)
+
+    return run[cols]
 
 
 def onsets_for(cond, run_df):
@@ -188,13 +193,13 @@ def parse_args():
     parser.add_argument('--onset-col', default='')
     parser.add_argument('--pmods-col', default=[], nargs="*")
     parser.add_argument('--run-col')
-    parser.add_argument('--drop-cols', help='Should we drop pre-named columns',
+    parser.add_argument('--drop-cols', help='Drop pre-named columns in'
+                                            'longform',
                         default=True)
     return parser.parse_args()
 
 if __name__ == '__main__':
     args = parse_args()
-    print(args)
     if args.verbose >= 2:
         print(args)
     main(args)
