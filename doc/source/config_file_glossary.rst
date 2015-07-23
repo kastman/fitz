@@ -13,3 +13,13 @@ Project - fitz_dir/project.py
 Experiment - fitz_dir/{experiment_name}.py
   * Pipeline source url & version
   * Processing options for each workflow.
+  * Default model parameters
+
+Model - fitz_dir/{experiment_name}-{model_name}.py
+  * Model Name
+  * Optional columns to use for condition/onset/duration
+  * Contrasts
+
+Subject Lists fitz_dir/subjects.txt or subjects-{group_name}.txt
+  * List of subject IDs to run
+  * Optionally use different groups of subjects with ``-g`` commandline option
