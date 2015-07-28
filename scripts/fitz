@@ -11,6 +11,7 @@ import fitz
 import os.path as op
 from nipype import config, logging
 import subprocess
+from fitz.tools.builder import new_workflow
 
 print 'Fitz: Version %s' % fitz.version
 
@@ -74,7 +75,7 @@ def run(args):
             raise
 
         params = fitz.frontend.update_params(wf_module, exp)
-        workflow = wf_module.workflow(
+        workflow = wf_module.workflow_manager(
             project, params, args, subj_source)
         fitz.run_workflow(workflow, wf_name, args)
 
@@ -116,6 +117,15 @@ def parse_args(arglist):
     install_parser = subparsers.add_parser('install', help='install workflows')
     install_parser.description = 'Install workflows requested by experiments'
     install_parser.set_defaults(func=install)
+
+    new_parser = subparsers.add_parser('new',
+                                                help='create new fitz things')
+    p = new_parser.add_subparsers()
+    new_workflow_parser = p.add_parser('workflow')
+    new_workflow_parser.description = 'Create a new workflow skeleton.'
+    new_workflow_parser.set_defaults(func=new_workflow)
+    new_workflow_parser.add_argument('pipe_name', help='Name of pipeline')
+    new_workflow_parser.add_argument('workflow_name', help='Name of workflow')
 
     return parser.parse_args(arglist)
 

@@ -191,7 +191,7 @@ def run_workflow(wf, name=None, args=None):
 def update_params(wf_module, exp):
     # print sys.path, dir(wf_module), wf_module.__name__, wf_module.__file__
     try:
-        params = wf_module.default_parameters()
+        params = wf_module.default_parameters
     except IOError:
         print "Workflow must define a default_parameters method!"
         raise
