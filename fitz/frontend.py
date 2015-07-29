@@ -4,8 +4,10 @@ import re
 import sys
 import imp
 import os.path as op
-
 import numpy as np
+import subprocess
+from nipype import config, logging
+from .tools import make_subject_source
 
 
 def gather_project_info():
@@ -49,7 +51,7 @@ def gather_experiment_info(exp_name=None, model=None):
         exp_file = op.join(fitz_dir, exp_name + ".py")
         exp = imp.load_source(exp_name, exp_file)
 
-    exp_dict = default_experiment_parameters()
+    exp_dict = {}
 
     def keep(k):
         return not re.match("__.*__", k)
@@ -75,68 +77,28 @@ def gather_experiment_info(exp_name=None, model=None):
     if model is not None:
         exp_dict["comments"] += "" if mod.__doc__ is None else mod.__doc__
 
-    # Check if it looks like this is a partial FOV acquisition
-    exp_dict["partial_brain"] = bool(exp_dict.get("whole_brain_template"))
-
-    # Temporal resolution. Mandatory.
-    exp_dict["TR"] = float(exp_dict["TR"])
-
-    # Set up the default contrasts
-    if exp_dict["condition_names"] is not None:
-        cs = [(name, [name], [1]) for name in exp_dict["condition_names"]]
-        exp_dict["contrasts"] = cs + exp_dict["contrasts"]
-
-    # Build contrasts list if neccesary
-    exp_dict["contrast_names"] = [c[0] for c in exp_dict["contrasts"]]
+    do_lyman_tweaks(exp_dict)
 
     return exp_dict
 
 
-def default_experiment_parameters():
-    """Return default values for experiments."""
-    exp = dict(
+def do_lyman_tweaks(exp_dict):
+    # Check if it looks like this is a partial FOV acquisition
+    exp_dict["partial_brain"] = bool(exp_dict.get("whole_brain_template"))
 
-        source_template="",
-        whole_brain_template="",
-        n_runs=0,
+    # Temporal resolution.
+    if "TR" in exp_dict.keys():
+        exp_dict["TR"] = float(exp_dict["TR"])
 
-        TR=2,
-        frames_to_toss=0,
-        temporal_interp=False,
-        interleaved=True,
-        coreg_init="fsl",
-        slice_order="up",
-        intensity_threshold=4.5,
-        motion_threshold=1,
-        spike_threshold=None,
-        smooth_fwhm=6,
-        hpf_cutoff=128,
+    # Set up the default contrasts
+    if ("condition_names" in exp_dict.keys() and
+            exp_dict["condition_names"] is not None):
+        cs = [(name, [name], [1]) for name in exp_dict["condition_names"]]
+        exp_dict["contrasts"] = cs + exp_dict["contrasts"]
 
-        design_name=None,
-        condition_names=None,
-        regressor_file=None,
-        regressor_names=None,
-        hrf_model="GammaDifferenceHRF",
-        temporal_deriv=False,
-        confound_pca=False,
-        hrf_params={},
-        contrasts=[],
-        memory_request=5,
-
-        flame_mode="flame1",
-        cluster_zthresh=2.3,
-        grf_pthresh=0.05,
-        peak_distance=30,
-        surf_name="inflated",
-        surf_smooth=5,
-        sampling_units="frac",
-        sampling_method="average",
-        sampling_range=(0, 1, .1),
-        surf_corr_sign="pos",
-
-        )
-
-    return exp
+    if "contrast_names" in exp_dict.keys():
+        # Build contrasts list if neccesary
+        exp_dict["contrast_names"] = [c[0] for c in exp_dict["contrasts"]]
 
 
 def determine_subjects(subject_arg=None):
@@ -180,14 +142,6 @@ def determine_engine(args):
     return plugin, plugin_args
 
 
-def run_workflow(wf, name=None, args=None):
-    """Run a workflow, if we asked to do so on the command line."""
-    plugin, plugin_args = determine_engine(args)
-    wf.write_graph(str(wf)+'.dot', format='svg')
-    if (name is None or name in args.workflows) and not args.dontrun:
-        wf.run(plugin, plugin_args)
-
-
 def update_params(wf_module, exp):
     # print sys.path, dir(wf_module), wf_module.__name__, wf_module.__file__
     try:
@@ -224,3 +178,86 @@ def check_modelname(model, exp_name):
         err.insert(0, "Problem with the way you specified your model on " +
                       "the commandline:")
         raise IOError('\n- '.join(err))
+
+
+def run(args):
+    """Get and process specific information"""
+    project = gather_project_info()
+    exp = gather_experiment_info(args.experiment, args.model)
+
+    # Subject is always highest level of parameterization
+    subject_list = determine_subjects(args.subjects)
+    subj_source = make_subject_source(subject_list)
+
+    # Get the full correct name for the experiment
+    if args.experiment is None:
+        exp_name = project["default_exp"]
+    else:
+        exp_name = args.experiment
+
+    exp['exp_name'] = exp_name
+    exp['model_name'] = args.model if args.model else ''
+
+    # Set roots of output storage
+    project['analysis_dir'] = op.join(project["analysis_dir"], exp_name)
+    project['working_dir'] = op.join(project["working_dir"], exp_name,
+                                     exp['model_name'])
+
+    config.set("execution", "crashdump_dir", project["crash_dir"])
+    if args.verbose > 0:
+        config.set("logging", "filemanip_level", 'DEBUG')
+        config.enable_debug_mode()
+        logging.update_logging(config)
+
+    if not op.exists(project['analysis_dir']):
+        os.makedirs(project['analysis_dir'])
+
+    workflows_dir = os.path.join(os.environ['FITZ_DIR'], exp['pipeline'],
+                                 'workflows')
+    if not op.isdir(workflows_dir):
+        missing_pipe = 'raise'
+        if missing_pipe == 'install':
+            install(args)
+        else:
+            raise IOError("Run `fitz install` to set up your pipeline of "
+                          "workflows, %s does not exist." % workflows_dir)
+    sys.path.insert(0, workflows_dir)
+    for wf_name in args.workflows:
+        try:
+            mod = imp.find_module(wf_name)
+            wf_module = imp.load_module("wf", *mod)
+        except (IOError, ImportError):
+            print "Could not find any workflows matching %s" % wf_name
+            raise
+
+        params = update_params(wf_module, exp)
+        workflow = wf_module.workflow_manager(
+            project, params, args, subj_source)
+
+        # Run the pipeline
+        plugin, plugin_args = determine_engine(args)
+        workflow.write_graph(str(workflow)+'.dot', format='svg')
+        if not args.dontrun:
+            workflow.run(plugin, plugin_args)
+
+
+def install(args):
+    project = gather_project_info()
+    exp = gather_experiment_info(project['default_exp'])
+
+    cmd = ['git', 'clone', exp['pipeline_src']]
+    workflow_base = os.path.splitext(os.path.basename(exp['pipeline_src']))[0]
+    print workflow_base
+    print ' '.join(cmd)
+    if not os.path.isdir(workflow_base):
+        subprocess.check_call(cmd)
+    else:
+        print "Workflow %s already exists." % workflow_base
+
+    cmd = ['git', 'checkout', exp['workflow_version']]
+    print ' '.join(cmd)
+    try:
+        subprocess.check_call(cmd, cwd=workflow_base)
+    except:
+        print "Error checking out tag %s" % exp['workflow_version']
+        # raise

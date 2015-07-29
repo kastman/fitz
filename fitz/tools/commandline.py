@@ -1,3 +1,6 @@
+import os
+from glob import glob
+from nipype.utils.filemanip import split_filename
 from textwrap import dedent
 from argparse import RawDescriptionHelpFormatter
 
@@ -15,8 +18,8 @@ def run_parser(subparsers):
     All fitz workflows use Nipype, so there are several common options for
     efficiently running multiple subjects at once with differnt nipype plugins.
     The script can thus be run for several subjects at once, and (with a large
-    enough cluster) all of the subjects can be processed in the time it takes to
-    process a single run of data linearly.
+    enough cluster) all of the subjects can be processed in the time it takes
+    to process a single run of data linearly.
 
     Nipype creates a cache directory to save processing time when steps are
     re-run. If you do not delete your cache directory after running (which is
@@ -55,14 +58,16 @@ def run_parser(subparsers):
     -------------
 
     """)
+    wf_files = glob(os.path.join(os.environ['FITZ_DIR'], '*/workflows/*.py'))
+    workflows = [split_filename(wf)[1] for wf in wf_files]
+
     parser = subparsers.add_parser('run', help='run')
     parser.description = help
     parser.formatter_class = RawDescriptionHelpFormatter
     parser.add_argument("--experiment", "-e", help="experimental paradigm")
     parser.add_argument("--model", "-m", help="model to fit")
     parser.add_argument("--workflows", "-w", nargs="*",
-                        choices=["xnatconvert", "preproc", "onset", "model",
-                                 "dti"], help="which workflows to run")
+                        choices=workflows, help="which workflows to run")
     parser.add_argument("--subjects", "-s", nargs="*", dest="subjects",
                         help=("list of subject ids, name of file in lyman "
                               "directory, or full path to text file with "
@@ -73,7 +78,8 @@ def run_parser(subparsers):
                         help="worklow execution plugin")
     parser.add_argument("--nprocs", "-n", default=4, type=int,
                         help="number of MultiProc processes to use")
-    parser.add_argument("--queue", "-q", help="which queue for PBS/SGE execution")
+    parser.add_argument("--queue", "-q", help="which queue for "
+                                              "scheduler execution")
     parser.add_argument("--dontrun", action="store_true",
                         help="don't actually execute the workflows")
     return parser

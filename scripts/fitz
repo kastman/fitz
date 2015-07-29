@@ -12,6 +12,7 @@ import os.path as op
 from nipype import config, logging
 import subprocess
 from fitz.tools.builder import new_workflow
+from fitz.frontend import run, install
 
 print 'Fitz: Version %s' % fitz.version
 
@@ -22,62 +23,6 @@ def main(arglist):
 
     # Call the function determined by the chosen subparser.
     args.func(args)
-
-
-def run(args):
-    """Get and process specific information"""
-    project = fitz.gather_project_info()
-    exp = fitz.gather_experiment_info(args.experiment, args.model)
-
-    # Subject is always highest level of parameterization
-    subject_list = fitz.determine_subjects(args.subjects)
-    subj_source = fitz.tools.make_subject_source(subject_list)
-
-    # Get the full correct name for the experiment
-    if args.experiment is None:
-        exp_name = project["default_exp"]
-    else:
-        exp_name = args.experiment
-
-    exp['exp_name'] = exp_name
-    exp['model_name'] = args.model if args.model else ''
-
-    # Set roots of output storage
-    project['analysis_dir'] = op.join(project["analysis_dir"], exp_name)
-    project['working_dir'] = op.join(project["working_dir"], exp_name,
-                                     exp['model_name'])
-
-    config.set("execution", "crashdump_dir", project["crash_dir"])
-    if args.verbose > 0:
-        config.set("logging", "filemanip_level", 'DEBUG')
-        config.enable_debug_mode()
-        logging.update_logging(config)
-
-    if not op.exists(project['analysis_dir']):
-        os.makedirs(project['analysis_dir'])
-
-    stream_dir = os.path.join(os.environ['FITZ_DIR'], exp['workflow'],
-                              'workflows')
-    if not op.isdir(stream_dir):
-        missing_pipe = 'raise'
-        if missing_pipe == 'install':
-            install(args)
-        else:
-            raise IOError("Run `fitz install` to set up your stream of "
-                          "workflows, %s does not exist." % stream_dir)
-    sys.path.insert(0, stream_dir)
-    for wf_name in args.workflows:
-        try:
-            mod = imp.find_module(wf_name)
-            wf_module = imp.load_module("wf", *mod)
-        except (IOError, ImportError):
-            print "Could not find any workflows matching %s" % wf_name
-            raise
-
-        params = fitz.frontend.update_params(wf_module, exp)
-        workflow = wf_module.workflow_manager(
-            project, params, args, subj_source)
-        fitz.run_workflow(workflow, wf_name, args)
 
 
 def install(args):
@@ -119,8 +64,8 @@ def parse_args(arglist):
     install_parser.set_defaults(func=install)
 
     new_parser = subparsers.add_parser('new', help='create new fitz things')
-    p = new_parser.add_subparsers()
-    new_workflow_parser = p.add_parser('workflow')
+    new_parsers = new_parser.add_subparsers()
+    new_workflow_parser = new_parsers.add_parser('workflow')
     new_workflow_parser.description = 'Create a new workflow skeleton.'
     new_workflow_parser.set_defaults(func=new_workflow)
     new_workflow_parser.add_argument('pipe_name', help='Name of pipeline')

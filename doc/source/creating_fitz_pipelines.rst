@@ -91,23 +91,23 @@ nipype and hook it up with our experiment files. For ease of discussion,
 let's use the determinisitc "compute tensor" half of this `basic FSL dti`_
 example to get FDT fractional anisotropy (FA) and mean diffusivity (MD) maps.
 
-First, create a pipeline directory and dti workflow:
+First, create a pipeline directory and compute_tensor workflow:
 
 .. code-block:: bash
 
-  fitz new workflow DTI_Pipeline dti
+  fitz new workflow dti_pipeline computeTensor
 
 This will create a new pipeline in the FITZ_DIR::
 
   FITZ_DIR
-  └── DTI_Pipeline
+  └── dti_pipeline
       ├── README.rst
       └── workflows
-          └── dti.py
+          └── compute_tensor.py
 
-Take a look at DTI_Pipeline/workflows/dti.py. You'll see that there are some
-examples for a simple SPM fMRI pipeline. Let's edit them so that they refelct
-DTI.
+Take a look at DTI_Pipeline/workflows/compute_tensor.py. You'll see that there
+are some examples for a simple SPM fMRI pipeline. Let's edit them so that they
+refelct DTI.
 
 In FITZ, unprocessed data are put in the **data** directory, so let's
 specify that we want to grab some raw dti nifti images:
@@ -133,11 +133,11 @@ the FITZ_DIR called dti.py, and put in the following:
 
 .. code-block:: python
 
-  # Workflow Parameters
+  # Pipeline Parameters
   # --------------------
-  workflow = "DTI_Pipeline"
-  workflow_src = ""
-  workflow_version = ""
+  pipeline = "DTI_Pipeline"
+  pipeline_src = ""
+  pipeline_version = ""
 
   # DTI Options
   # -------------

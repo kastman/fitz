@@ -1,7 +1,8 @@
 import os.path as op
 import networkx as nx
 from nipype import Workflow, MapNode, Node, IdentityInterface
-from nipype.interfaces.base import (BaseInterfaceInputSpec, TraitedSpec,
+from nipype.interfaces.base import (  # BaseInterfaceInputSpec,
+                                    TraitedSpec,
                                     File, OutputMultiPath, isdefined)
 
 
