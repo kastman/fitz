@@ -3,14 +3,11 @@
 Main execution script for fMRI analysis in the ecosystem.
 
 """
-import os
+# import os
 import sys
 import argparse
-import imp
+# import imp
 import fitz
-import os.path as op
-from nipype import config, logging
-import subprocess
 from fitz.tools.builder import new_workflow
 from fitz.frontend import run, install
 
@@ -23,28 +20,6 @@ def main(arglist):
 
     # Call the function determined by the chosen subparser.
     args.func(args)
-
-
-def install(args):
-    project = fitz.gather_project_info()
-    exp = fitz.gather_experiment_info(project['default_exp'])
-
-    cmd = ['git', 'clone', exp['workflow_src']]
-    workflow_base = os.path.splitext(os.path.basename(exp['workflow_src']))[0]
-    print workflow_base
-    print ' '.join(cmd)
-    if not os.path.isdir(workflow_base):
-        subprocess.check_call(cmd)
-    else:
-        print "Workflow %s already exists." % workflow_base
-
-    cmd = ['git', 'checkout', exp['workflow_version']]
-    print ' '.join(cmd)
-    try:
-        subprocess.check_call(cmd, cwd=workflow_base)
-    except:
-        print "Error checking out tag %s" % exp['workflow_version']
-        # raise
 
 
 def parse_args(arglist):
