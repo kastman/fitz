@@ -21,30 +21,11 @@ def main(arglist):
     """Main function for handing off execution from the command line."""
     args = parse_args(arglist)
 
+    if args.func != fitz.tools.setup_project.main:
+        check_env()
+
     # Call the function determined by the chosen subparser.
     args.func(args)
-
-
-def install(args):
-    project = fitz.gather_project_info()
-    exp = fitz.gather_experiment_info(project['default_exp'])
-
-    cmd = ['git', 'clone', exp['workflow_src']]
-    workflow_base = os.path.splitext(os.path.basename(exp['workflow_src']))[0]
-    print workflow_base
-    print ' '.join(cmd)
-    if not os.path.isdir(workflow_base):
-        subprocess.check_call(cmd)
-    else:
-        print "Workflow %s already exists." % workflow_base
-
-    cmd = ['git', 'checkout', exp['workflow_version']]
-    print ' '.join(cmd)
-    try:
-        subprocess.check_call(cmd, cwd=workflow_base)
-    except:
-        print "Error checking out tag %s" % exp['workflow_version']
-        # raise
 
 
 def parse_args(arglist):
@@ -73,6 +54,11 @@ def parse_args(arglist):
 
     return parser.parse_args(arglist)
 
+
+def check_env():
+    if 'FITZ_DIR' not in os.environ.keys():
+        raise IOError("FITZ_DIR must be set. Run `export FITZ_DIR=<path>` " +
+                      "to set it.")
 
 if __name__ == '__main__':
     main(sys.argv[1:])

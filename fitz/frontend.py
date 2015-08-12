@@ -254,10 +254,10 @@ def install(args):
     else:
         print "Workflow %s already exists." % workflow_base
 
-    cmd = ['git', 'checkout', exp['workflow_version']]
+    cmd = ['git', 'checkout', exp['pipeline_version']]
     print ' '.join(cmd)
     try:
         subprocess.check_call(cmd, cwd=workflow_base)
     except:
-        print "Error checking out tag %s" % exp['workflow_version']
+        print "Error checking out tag %s" % exp['pipeline_version']
         # raise
