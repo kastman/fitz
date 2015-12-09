@@ -3,7 +3,7 @@
 Main execution script for fMRI analysis in the ecosystem.
 
 """
-# import os
+import os
 import sys
 import argparse
 # import imp
