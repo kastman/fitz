@@ -3,14 +3,11 @@
 Main execution script for fMRI analysis in the ecosystem.
 
 """
-import os
+# import os
 import sys
 import argparse
-import imp
+# import imp
 import fitz
-import os.path as op
-from nipype import config, logging
-import subprocess
 from fitz.tools.builder import new_workflow
 from fitz.frontend import run, install
 
