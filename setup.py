@@ -12,9 +12,7 @@ LICENSE = 'BSD (3-clause)'
 URL = 'http://github.com/kastman/fitz'
 DOWNLOAD_URL = ''
 
-with open(os.path.join(os.path.dirname(
-        __file__), 'fitz', 'VERSION')) as version_file:
-    VERSION = version_file.read().strip()
+from fitz import __version__
 
 def check_dependencies():
 
@@ -55,11 +53,11 @@ if __name__ == "__main__":
         maintainer_email=MAINTAINER_EMAIL,
         description=DESCRIPTION,
         license=LICENSE,
-        version=VERSION,
+        version=__version__,
         url=URL,
         download_url=DOWNLOAD_URL,
         install_requires=['numpy', 'scipy', 'pandas', 'nipype', 'nibabel',
-                          'pyxnat', 'httplib2'],
+                          'pyxnat', 'httplib2', 'configobj', 'configparser'],
         packages=find_packages(exclude=['doc']),  #['fitz', 'fitz.tools'],
         scripts=['scripts/fitz', 'scripts/log2design.py'],
         classifiers=[

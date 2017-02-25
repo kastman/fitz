@@ -11,8 +11,6 @@ import fitz
 from fitz.tools.builder import new_workflow
 from fitz.frontend import run, install
 
-print 'Fitz: Version %s' % fitz.version
-
 
 def main(arglist):
     """Main function for handing off execution from the command line."""
