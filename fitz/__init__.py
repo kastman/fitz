@@ -5,7 +5,6 @@ from pkg_resources import DistributionNotFound, get_distribution
 import os
 from os.path import dirname, basename, isfile
 import glob
-import django
 
 
 try:
@@ -20,9 +19,6 @@ except DistributionNotFound:
 finally:
     del get_distribution, DistributionNotFound
 
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'imagecanopy.settings')
-django.setup()
 
 modules = glob.glob(os.path.join(dirname(__file__), '*.py'))
 __all__ = [basename(f)[:-3] for f in modules if isfile(f) and not f.endswith('__init__.py')]

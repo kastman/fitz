@@ -1,0 +1,8 @@
+IPython
+scipy
+matplotlib
+pandas
+nibabel
+nipype
+pyxnat
+httplib2
