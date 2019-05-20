@@ -7,7 +7,7 @@ import os.path as op
 import numpy as np
 import subprocess
 from nipype import config, logging
-from .tools import make_subject_source
+from fitz.tools.graphutils import make_subject_source
 
 
 def gather_project_info():
@@ -236,7 +236,7 @@ def run(args):
 
         # Run the pipeline
         plugin, plugin_args = determine_engine(args)
-        workflow.write_graph(str(workflow)+'.dot', format='svg')
+        workflow.write_graph(str(workflow) + '.dot', format='svg')
         if not args.dontrun:
             workflow.run(plugin, plugin_args)
 
@@ -258,6 +258,6 @@ def install(args):
     print(' '.join(cmd))
     try:
         subprocess.check_call(cmd, cwd=workflow_base)
-    except:
+    except:  # noqa
         print("Error checking out tag %s" % exp['pipeline_version'])
         # raise
