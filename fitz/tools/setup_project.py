@@ -86,7 +86,7 @@ _attrs = {
     'blink':     '05m',
 }
 
-for _name, _value in _attrs.items():
+for _name, _value in list(_attrs.items()):
     codes[_name] = '\x1b[' + _value
 
 _colors = [
@@ -196,24 +196,24 @@ def do_prompt(d, key, text, default=None, validator=nonempty):
             prompt = blue(PROMPT_PREFIX + '%s [%s]: ' % (text, default))
         else:
             prompt = blue(PROMPT_PREFIX + text + ': ')
-        x = raw_input(prompt)
+        x = input(prompt)
         if default and not x:
             x = default
         if x.decode('ascii', 'replace').encode('ascii', 'replace') != x:
             if TERM_ENCODING:
                 x = x.decode(TERM_ENCODING)
             else:
-                print yellow('* Note: non-ASCII characters entered '
+                print(yellow('* Note: non-ASCII characters entered '
                              'and terminal encoding unknown -- assuming '
-                             'UTF-8 or Latin-1.')
+                             'UTF-8 or Latin-1.'))
                 try:
                     x = x.decode('utf-8')
                 except UnicodeDecodeError:
                     x = x.decode('latin1')
         try:
             x = validator(x)
-        except ValidationError, err:
-            print red('* ' + str(err))
+        except ValidationError as err:
+            print(red('* ' + str(err)))
             continue
         break
     d[key] = x
@@ -237,31 +237,31 @@ def main(args):
         import_notes = "" if clean_import else ", but it did not import cleanly"
 
         # Maybe give a heads up about it
-        print red("Warning:"), """\
+        print(red("Warning:"), """\
 project.py file found in current directory%s.
 
 Do you wish to generate a new project file?
 (Note that you can always edit the existing file).
-""" % import_notes
+""" % import_notes)
 
         # And let the user choose whether to overwrite it
         do_prompt(d, "overwrite", "Overwrite existing file? (y/N)",
                   "n", boolean)
 
         if not d["overwrite"]:
-            print red("Aborting project setup.")
+            print(red("Aborting project setup."))
             sys.exit(0)
         os.remove("project.py")
 
     # Now go through the prompted setup procedure
-    print bold("Let's set up your project.")
+    print(bold("Let's set up your project."))
 
-    print '''
+    print('''
 Please enter values for the following settings (just press Enter to
 accept a default value, if one is given in brackets).
 
 Please use relative paths.
-'''
+''')
 
     do_prompt(d, "project_name", "Project name")
 
