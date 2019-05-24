@@ -95,8 +95,8 @@ def do_lyman_tweaks(exp_dict):
         exp_dict["TR"] = float(exp_dict["TR"])
 
     # Set up the default contrasts
-    if ("condition_names" in list(exp_dict.keys()) and
-            exp_dict["condition_names"] is not None):
+    if ("condition_names" in list(exp_dict.keys())
+            and exp_dict["condition_names"] is not None):
         cs = [(name, [name], [1]) for name in exp_dict["condition_names"]]
         exp_dict["contrasts"] = cs + exp_dict["contrasts"]
 
@@ -124,8 +124,11 @@ def determine_subjects(subject_arg=None):
 
 def determine_engine(args):
     """Read command line args and return Workflow.run() args."""
-    plugin_dict = dict(linear="Linear", multiproc="MultiProc",
-                       ipython="IPython", torque="PBS", sge="SGE",
+    plugin_dict = dict(linear="Linear",
+                       multiproc="MultiProc",
+                       ipython="IPython",
+                       torque="PBS",
+                       sge="SGE",
                        slurm="SLURM")
 
     plugin = plugin_dict[args.plugin]
@@ -179,8 +182,9 @@ def check_modelname(model, exp_name):
         err.append("Don't include the experiment name (%s) " % exp_name +
                    "when listing your model.")
     if len(err):
-        err.insert(0, "Problem with the way you specified your model on " +
-                      "the commandline:")
+        err.insert(
+            0, "Problem with the way you specified your model on " +
+            "the commandline:")
         raise IOError('\n- '.join(err))
 
 
@@ -235,8 +239,8 @@ def run(args):
             raise
 
         params = update_params(wf_module, exp)
-        workflow = wf_module.workflow_manager(
-            project, params, args, subj_source)
+        workflow = wf_module.workflow_manager(project, params, args,
+                                              subj_source)
 
         # Run the pipeline
         plugin, plugin_args = determine_engine(args)

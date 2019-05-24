@@ -24,8 +24,8 @@ def load_onsets(onsets_files, args):
 
         # If any column arguments were given, convert to a lyman-like design
         # with explicitly named columns. Else, just concatenate and add 'run'.
-        if (args.onset_col or args.duration_col or args.condition_col or
-                args.pmods_col):
+        if (args.onset_col or args.duration_col or args.condition_col
+                or args.pmods_col):
             run = rename_columns(args, run)
             condition_col = 'condition'
             # Remove blanks
@@ -39,7 +39,7 @@ def load_onsets(onsets_files, args):
         # Drop any columns thar are entirely empty (for vanity)
         for col_name, col in run.iteritems():
             if col.isnull().all():
-                del(run[col_name])
+                del (run[col_name])
 
         runs.append(run)
 
@@ -103,13 +103,15 @@ def onsets_for(cond, run_df):
             onsets=cond_df['onset'].tolist(),
         )
 
-        if ('amplitude' in cond_df.columns and
-                cond_df['amplitude'].notnull().any()):
-            pmods = [dict(
-                name=args.pmod_name,
-                poly=1,
-                param=cond_df['amplitude'].tolist(),
-            )]
+        if ('amplitude' in cond_df.columns
+                and cond_df['amplitude'].notnull().any()):
+            pmods = [
+                dict(
+                    name=args.pmod_name,
+                    poly=1,
+                    param=cond_df['amplitude'].tolist(),
+                )
+            ]
             condinfo['pmod'] = pmods
     else:
         condinfo = None
@@ -135,12 +137,12 @@ def _lists_to_scipy(onsets_list):
     """
 
     conditions_n = len(onsets_list)
-    names = empty((conditions_n,),     dtype='object')
-    durations = empty((conditions_n,), dtype='object')
-    onsets = empty((conditions_n,),    dtype='object')
+    names = empty((conditions_n, ), dtype='object')
+    durations = empty((conditions_n, ), dtype='object')
+    onsets = empty((conditions_n, ), dtype='object')
 
     pmoddt = [('name', 'O'), ('poly', 'O'), ('param', 'O')]
-    pmods = empty((conditions_n),      dtype=pmoddt)
+    pmods = empty((conditions_n), dtype=pmoddt)
     has_pmods = False
 
     for i, ons in enumerate(onsets_list):
@@ -156,9 +158,9 @@ def _lists_to_scipy(onsets_list):
             has_pmods = True
             cond_pmod_list = ons['pmod']
             current_condition_n_pmods = len(cond_pmod_list)
-            pmod_names = empty((current_condition_n_pmods,), dtype='object')
-            pmod_param = empty((current_condition_n_pmods,), dtype='object')
-            pmod_poly = empty((current_condition_n_pmods,), dtype='object')
+            pmod_names = empty((current_condition_n_pmods, ), dtype='object')
+            pmod_param = empty((current_condition_n_pmods, ), dtype='object')
+            pmod_poly = empty((current_condition_n_pmods, ), dtype='object')
 
             for pmod_i, val in enumerate(cond_pmod_list):
                 pmod_names[pmod_i] = val['name']
@@ -169,11 +171,7 @@ def _lists_to_scipy(onsets_list):
             pmods[i]['poly'] = pmod_poly
             pmods[i]['param'] = pmod_param
 
-    scipy_onsets = dict(
-        names=names,
-        durations=durations,
-        onsets=onsets
-    )
+    scipy_onsets = dict(names=names, durations=durations, onsets=onsets)
 
     if has_pmods:
         scipy_onsets['pmod'] = pmods
@@ -183,25 +181,34 @@ def _lists_to_scipy(onsets_list):
 
 def parse_args():
     parser = ArgumentParser()
-    parser.add_argument('onsets_files', type=FileType('r'),
-                        help='List of FSL EV onsets to convert', nargs='+')
-    parser.add_argument('--out',   '-o', default='onsets_',
+    parser.add_argument('onsets_files',
+                        type=FileType('r'),
+                        help='List of FSL EV onsets to convert',
+                        nargs='+')
+    parser.add_argument('--out',
+                        '-o',
+                        default='onsets_',
                         help='Output filename.')
-    parser.add_argument('--verbose',      '-v', action="count",
+    parser.add_argument('--verbose',
+                        '-v',
+                        action="count",
                         help="increase output verbosity")
-    parser.add_argument('--pmod-name', default='pmod',
+    parser.add_argument('--pmod-name',
+                        default='pmod',
                         help='Name to use when writing FSL Amplitude as SPM '
-                             'parametric modulator')
+                        'parametric modulator')
     parser.add_argument('--conditions', '-c', default=[], nargs='+')
     parser.add_argument('--condition-col')
     parser.add_argument('--duration-col')
     parser.add_argument('--onset-col', default='')
     parser.add_argument('--pmods-col', default=[], nargs="*")
     parser.add_argument('--run-col')
-    parser.add_argument('--drop-cols', help='Drop pre-named columns in'
-                                            'longform',
+    parser.add_argument('--drop-cols',
+                        help='Drop pre-named columns in'
+                        'longform',
                         default=True)
     return parser.parse_args()
+
 
 if __name__ == '__main__':
     args = parse_args()

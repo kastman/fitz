@@ -55,5 +55,6 @@ def check_env():
         raise IOError("FITZ_DIR must be set. Run `export FITZ_DIR=<path>` " +
                       "to set it.")
 
+
 if __name__ == '__main__':
     main(sys.argv[1:])

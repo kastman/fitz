@@ -2,12 +2,12 @@ import os.path as op
 import networkx as nx
 from nipype import Workflow, MapNode, Node, IdentityInterface
 from nipype.interfaces.base import (  # BaseInterfaceInputSpec,
-                                    TraitedSpec,
-                                    File, OutputMultiPath, isdefined)
+    TraitedSpec, File, OutputMultiPath, isdefined)
 
 
 class InputWrapper(object):
     """Implements connections between DataGrabber and workflow inputs."""
+
     def __init__(self, workflow, subject_node, grabber_node, input_node):
 
         self.wf = workflow
@@ -19,23 +19,23 @@ class InputWrapper(object):
         """Connect stereotyped inputs to the input IdentityInterface."""
 
         # Connect subject_id to input and grabber nodes
-        self.wf.connect(self.subj_node, "subject_id",
-                        self.grab_node, "subject_id")
+        self.wf.connect(self.subj_node, "subject_id", self.grab_node,
+                        "subject_id")
         if hasattr(self.in_node.inputs, "subject_id"):
-            self.wf.connect(self.subj_node, "subject_id",
-                            self.in_node, "subject_id")
+            self.wf.connect(self.subj_node, "subject_id", self.in_node,
+                            "subject_id")
 
         # Connect the datagrabber outputs to the workflow inputs
         grabbed = self.grab_node.outputs.get()
         inputs = self.in_node.inputs.get()
         for field in grabbed:
             if field in inputs:
-                self.wf.connect(self.grab_node, field,
-                                self.in_node, field)
+                self.wf.connect(self.grab_node, field, self.in_node, field)
 
 
 class OutputWrapper(object):
     """Implements connections between workflow outputs and DataSink."""
+
     def __init__(self, workflow, subject_node, sink_node, output_node):
 
         self.wf = workflow
@@ -43,7 +43,9 @@ class OutputWrapper(object):
         self.sink_node = sink_node
         self.out_node = output_node
 
-    def set_mapnode_substitutions(self, n_runs, template_pattern="run_%d",
+    def set_mapnode_substitutions(self,
+                                  n_runs,
+                                  template_pattern="run_%d",
                                   template_args="r + 1"):
         """Find mapnode names and add datasink substitutions to sort by run."""
 
@@ -61,8 +63,8 @@ class OutputWrapper(object):
         for r in reversed(list(range(n_runs))):
             templ_args = eval('(%s)' % template_args)
             for name in mapnode_names:
-                substitutions.append(("_%s%d" % (name, r),
-                                      template_pattern % templ_args))
+                substitutions.append(
+                    ("_%s%d" % (name, r), template_pattern % templ_args))
 
         # Set the substitutions attribute on the DataSink node
         if isdefined(self.sink_node.inputs.substitutions):
@@ -80,8 +82,8 @@ class OutputWrapper(object):
     def set_subject_container(self):
         """Store results by subject at highest level."""
         # Connect the subject_id value as the container
-        self.wf.connect(self.subj_node, "subject_id",
-                        self.sink_node, "container")
+        self.wf.connect(self.subj_node, "subject_id", self.sink_node,
+                        "container")
 
         subj_subs = []
         for s in self.subj_node.iterables[1]:
@@ -98,8 +100,8 @@ class OutputWrapper(object):
         outputs = self.out_node.outputs.get()
         prefix = "@" if dir_name is None else dir_name + ".@"
         for field in outputs:
-            self.wf.connect(self.out_node, field,
-                            self.sink_node, prefix + field)
+            self.wf.connect(self.out_node, field, self.sink_node,
+                            prefix + field)
 
 
 def find_mapnodes(workflow):
@@ -149,6 +151,7 @@ class ManyOutFiles(TraitedSpec):
 
 def list_out_file(fname):
     """Return a _list_outputs function for a single out_file."""
+
     def _list_outputs(self):
 
         outputs = self._outputs().get()

@@ -59,8 +59,8 @@ def run_parser(subparsers):
 
     """)
     if 'FITZ_DIR' in list(os.environ.keys()):
-        wf_files = glob(os.path.join(
-            os.environ['FITZ_DIR'], '*/workflows/*.py'))
+        wf_files = glob(
+            os.path.join(os.environ['FITZ_DIR'], '*/workflows/*.py'))
         workflows = [split_filename(wf)[1] for wf in wf_files]
     else:
         workflows = []
@@ -69,20 +69,34 @@ def run_parser(subparsers):
     parser.formatter_class = RawDescriptionHelpFormatter
     parser.add_argument("--experiment", "-e", help="experimental paradigm")
     parser.add_argument("--model", "-m", help="model to fit")
-    parser.add_argument("--workflows", "-w", nargs="*",
-                        choices=workflows, help="which workflows to run")
-    parser.add_argument("--subjects", "-s", nargs="*", dest="subjects",
+    parser.add_argument("--workflows",
+                        "-w",
+                        nargs="*",
+                        choices=workflows,
+                        help="which workflows to run")
+    parser.add_argument("--subjects",
+                        "-s",
+                        nargs="*",
+                        dest="subjects",
                         help=("list of subject ids, name of file in lyman "
                               "directory, or full path to text file with "
                               "subject ids"))
-    parser.add_argument("--plugin", "-p", default="multiproc",
-                        choices=["linear", "multiproc", "ipython",
-                                 "torque", "sge", "slurm"],
-                        help="worklow execution plugin")
-    parser.add_argument("--nprocs", "-n", default=4, type=int,
+    parser.add_argument(
+        "--plugin",
+        "-p",
+        default="multiproc",
+        choices=["linear", "multiproc", "ipython", "torque", "sge", "slurm"],
+        help="worklow execution plugin")
+    parser.add_argument("--nprocs",
+                        "-n",
+                        default=4,
+                        type=int,
                         help="number of MultiProc processes to use")
-    parser.add_argument("--queue", "-q", help="which queue for "
-                                              "scheduler execution")
-    parser.add_argument("--dontrun", action="store_true",
+    parser.add_argument("--queue",
+                        "-q",
+                        help="which queue for "
+                        "scheduler execution")
+    parser.add_argument("--dontrun",
+                        action="store_true",
                         help="don't actually execute the workflows")
     return parser
