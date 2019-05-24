@@ -17,7 +17,11 @@ def gather_project_info():
     try:
         project = sys.modules["project"]
     except KeyError:
-        project = imp.load_source("project", proj_file)
+        try:
+            project = imp.load_source("project", proj_file)
+        except IOError:
+            sys.stderr.write('ERROR reading %s' % proj_file)
+            raise
 
     project_dict = dict()
     for dir in ["data", "analysis", "working", "crash"]:
@@ -212,7 +216,7 @@ def run(args):
     if not op.exists(project['analysis_dir']):
         os.makedirs(project['analysis_dir'])
 
-    workflows_dir = os.path.join(os.environ['FITZ_DIR'], exp['pipeline'],
+    workflows_dir = os.path.join(os.environ['FITZ_DIR'], exp['pipeline_name'],
                                  'workflows')
     if not op.isdir(workflows_dir):
         missing_pipe = 'raise'

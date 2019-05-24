@@ -37,7 +37,7 @@ def run_parser(subparsers):
 
     fitz run -w xnatconvert preproc onset model
 
-        Run every stage of the standar SPM fMRI pipeline for the default
+        Run every stage of the standard SPM fMRI pipeline for the default
         experiment for each subject defined in $FITZ_DIR/subjects.txt.
         The processing will be distributed locally with the MultiProc plugin
         using 4 processes.
