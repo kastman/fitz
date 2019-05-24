@@ -58,7 +58,7 @@ class OutputWrapper(object):
 
         # Build a list of substitution tuples
         substitutions = []
-        for r in reversed(range(n_runs)):
+        for r in reversed(list(range(n_runs))):
             templ_args = eval('(%s)' % template_args)
             for name in mapnode_names:
                 substitutions.append(("_%s%d" % (name, r),

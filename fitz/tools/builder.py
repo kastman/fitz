@@ -28,7 +28,7 @@ def new_workflow(args):
                       'overwrite it.')
     else:
         copytemplate(workflow_template, workflow_dest, template_args)
-        print 'Created new template workflow: %s' % workflow_dest
+        print('Created new template workflow: %s' % workflow_dest)
 
 
 def copytemplate(src, dest, args):

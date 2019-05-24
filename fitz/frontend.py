@@ -7,7 +7,7 @@ import os.path as op
 import numpy as np
 import subprocess
 from nipype import config, logging
-from .tools import make_subject_source
+from fitz.tools.graphutils import make_subject_source
 
 
 def gather_project_info():
@@ -60,7 +60,7 @@ def gather_experiment_info(exp_name=None, model=None):
     def keep(k):
         return not re.match("__.*__", k)
 
-    exp_dict.update({k: v for k, v in exp.__dict__.items() if keep(k)})
+    exp_dict.update({k: v for k, v in list(exp.__dict__.items()) if keep(k)})
 
     # Possibly import the alternate model details
     if model is not None:
@@ -71,7 +71,7 @@ def gather_experiment_info(exp_name=None, model=None):
             model_file = op.join(fitz_dir, "%s-%s.py" % (exp_name, model))
             mod = imp.load_source(model, model_file)
 
-        mod_dict = {k: v for k, v in mod.__dict__.items() if keep(k)}
+        mod_dict = {k: v for k, v in list(mod.__dict__.items()) if keep(k)}
 
         # Update the base information with the altmodel info
         exp_dict.update(mod_dict)
@@ -91,16 +91,16 @@ def do_lyman_tweaks(exp_dict):
     exp_dict["partial_brain"] = bool(exp_dict.get("whole_brain_template"))
 
     # Temporal resolution.
-    if "TR" in exp_dict.keys():
+    if "TR" in list(exp_dict.keys()):
         exp_dict["TR"] = float(exp_dict["TR"])
 
     # Set up the default contrasts
-    if ("condition_names" in exp_dict.keys() and
+    if ("condition_names" in list(exp_dict.keys()) and
             exp_dict["condition_names"] is not None):
         cs = [(name, [name], [1]) for name in exp_dict["condition_names"]]
         exp_dict["contrasts"] = cs + exp_dict["contrasts"]
 
-    if "contrast_names" in exp_dict.keys():
+    if "contrast_names" in list(exp_dict.keys()):
         # Build contrasts list if neccesary
         exp_dict["contrast_names"] = [c[0] for c in exp_dict["contrasts"]]
 
@@ -151,7 +151,7 @@ def update_params(wf_module, exp):
     try:
         params = wf_module.default_parameters
     except IOError:
-        print "Workflow must define a default_parameters method!"
+        print("Workflow must define a default_parameters method!")
         raise
 
     # default_names = set(params.keys())
@@ -231,7 +231,7 @@ def run(args):
             mod = imp.find_module(wf_name)
             wf_module = imp.load_module("wf", *mod)
         except (IOError, ImportError):
-            print "Could not find any workflows matching %s" % wf_name
+            print("Could not find any workflows matching %s" % wf_name)
             raise
 
         params = update_params(wf_module, exp)
@@ -240,7 +240,7 @@ def run(args):
 
         # Run the pipeline
         plugin, plugin_args = determine_engine(args)
-        workflow.write_graph(str(workflow)+'.dot', format='svg')
+        workflow.write_graph(str(workflow) + '.dot', format='svg')
         if not args.dontrun:
             workflow.run(plugin, plugin_args)
 
@@ -251,17 +251,17 @@ def install(args):
 
     cmd = ['git', 'clone', exp['pipeline_src']]
     workflow_base = os.path.splitext(os.path.basename(exp['pipeline_src']))[0]
-    print workflow_base
-    print ' '.join(cmd)
+    print(workflow_base)
+    print(' '.join(cmd))
     if not os.path.isdir(workflow_base):
         subprocess.check_call(cmd)
     else:
-        print "Workflow %s already exists." % workflow_base
+        print("Workflow %s already exists." % workflow_base)
 
     cmd = ['git', 'checkout', exp['pipeline_version']]
-    print ' '.join(cmd)
+    print(' '.join(cmd))
     try:
         subprocess.check_call(cmd, cwd=workflow_base)
-    except:
-        print "Error checking out tag %s" % exp['pipeline_version']
+    except:  # noqa
+        print("Error checking out tag %s" % exp['pipeline_version'])
         # raise

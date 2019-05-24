@@ -58,7 +58,7 @@ def run_parser(subparsers):
     -------------
 
     """)
-    if 'FITZ_DIR' in os.environ.keys():
+    if 'FITZ_DIR' in list(os.environ.keys()):
         wf_files = glob(os.path.join(
             os.environ['FITZ_DIR'], '*/workflows/*.py'))
         workflows = [split_filename(wf)[1] for wf in wf_files]

@@ -14,12 +14,18 @@ DOWNLOAD_URL = ''
 
 from fitz import __version__
 
+
+INSTALL_REQUIRES_IMPORT = ["IPython", "numpy", "scipy", "matplotlib",
+                           "pandas", "nibabel", "nipype", "pyxnat", "httplib2"]
+INSTALL_REQUIRES = [s.lower() for s in INSTALL_REQUIRES_IMPORT]
+INSTALL_REQUIRES = ['matplotlib', 'nipype', 'nibabel', 'pandas', 'pyxnat', 'scipy', 'httplib2']
+
+
 def check_dependencies():
 
     # Just make sure dependencies exist, I haven't rigorously
     # tested what the minimal versions that will work are
-    needed_deps = ["IPython", "numpy", "scipy", "matplotlib",
-                   "pandas", "nibabel", "nipype", "pyxnat", "httplib2"]
+    needed_deps = INSTALL_REQUIRES_IMPORT
     missing_deps = []
     for dep in needed_deps:
         try:
@@ -33,40 +39,38 @@ def check_dependencies():
                    .replace("skimage", "scikit-image"))
         raise ImportError("Missing dependencies: %s" % missing)
 
+
 if __name__ == "__main__":
 
     if os.path.exists('MANIFEST'):
         os.remove('MANIFEST')
 
     import sys
-    if not (len(sys.argv) >= 2 and ('--help' in sys.argv[1:] or
-            sys.argv[1] in ('--help-commands',
-                            '--version',
-                            'egg_info',
-                            'clean'))):
+    if not (
+            len(sys.argv) >= 2 and ('--help' in sys.argv[1:] or
+                                    sys.argv[1] in ('--help-commands', '--version', 'egg_info', 'clean'))):
         check_dependencies()
 
     setup(name=DISTNAME,
-        author=AUTHOR,
-        author_email=AUTHOR_EMAIL,
-        maintainer=MAINTAINER,
-        maintainer_email=MAINTAINER_EMAIL,
-        description=DESCRIPTION,
-        license=LICENSE,
-        version=__version__,
-        url=URL,
-        download_url=DOWNLOAD_URL,
-        install_requires=['numpy', 'scipy', 'pandas', 'nipype', 'nibabel',
-                          'pyxnat', 'httplib2', 'configobj', 'configparser'],
-        packages=find_packages(exclude=['doc']),  #['fitz', 'fitz.tools'],
-        scripts=['scripts/fitz', 'scripts/log2design.py'],
-        classifiers=[
-                     'Development Status :: 2 - Pre-Alpha',
-                     'Intended Audience :: Science/Research',
-                     'Programming Language :: Python :: 2.7',
-                     'License :: OSI Approved :: BSD License',
-                     'Operating System :: POSIX',
-                     'Operating System :: Unix',
-                     'Operating System :: MacOS'],
-        keywords=['neuroimaging', 'workflows']
+          author=AUTHOR,
+          author_email=AUTHOR_EMAIL,
+          maintainer=MAINTAINER,
+          maintainer_email=MAINTAINER_EMAIL,
+          description=DESCRIPTION,
+          license=LICENSE,
+          version=VERSION,
+          url=URL,
+          download_url=DOWNLOAD_URL,
+          install_requires=INSTALL_REQUIRES,
+          packages=find_packages(exclude=['doc']),  # ['fitz', 'fitz.tools'],
+          scripts=['scripts/fitz', 'scripts/log2design.py'],
+          classifiers=[
+              'Development Status :: 2 - Pre-Alpha',
+              'Intended Audience :: Science/Research',
+              'Programming Language :: Python :: 2.7',
+              'License :: OSI Approved :: BSD License',
+              'Operating System :: POSIX',
+              'Operating System :: Unix',
+              'Operating System :: MacOS'],
+          keywords=['neuroimaging', 'workflows']
           )

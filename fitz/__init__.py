@@ -1,11 +1,25 @@
-from frontend import *
-import tools
-import os.path as op
+# from fitz.frontend import *
+# import tools
+# import os.path as op
+from pkg_resources import DistributionNotFound, get_distribution
+import os
+from os.path import dirname, basename, isfile
+import glob
 
-__version__ = '0.0.1dev1'
-__license__ = 'BSD-3'
-__author__ = 'Erik Kastman'
-__author_email__ = 'erik.kastman@gmail.com'
-__maintainer_email__ = 'erik.kastman@gmail.com'
-__url__ = 'https://github.com/kastman/fitz'
-__downloadUrl__ = 'https://github.com/kastman/fitz/releases'
+
+try:
+    # Change here if project is renamed and does not equal the package name
+    dist_name = __name__
+    __version__ = get_distribution(dist_name).version
+except DistributionNotFound:
+    with open(os.path.join(os.path.dirname(__file__), 'VERSION')) as version_file:
+        version = version_file.read().strip()
+    __version__ = version
+    del version
+finally:
+    del get_distribution, DistributionNotFound
+
+
+modules = glob.glob(os.path.join(dirname(__file__), '*.py'))
+__all__ = [basename(f)[:-3] for f in modules if isfile(f) and not f.endswith('__init__.py')]
+from . import *  # noqa
