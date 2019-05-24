@@ -28,7 +28,7 @@ def parse_args(arglist):
     parser = argparse.ArgumentParser()
     parser.add_argument('--verbose', '-v', action='store_true')
     subparsers = parser.add_subparsers()
-    run_parser = fitz.tools.run_parser(subparsers)
+    run_parser = fitz.tools.commandline.run_parser(subparsers)
     run_parser.set_defaults(func=run)
 
     setup_parser = subparsers.add_parser('setup', help='setup')

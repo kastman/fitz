@@ -12,10 +12,12 @@ LICENSE = 'BSD (3-clause)'
 URL = 'http://github.com/kastman/fitz'
 DOWNLOAD_URL = ''
 
-from fitz import __version__
+with open(os.path.join(os.path.dirname(__file__), 'fitz',
+                       'VERSION')) as version_file:
+    VERSION = version_file.read().strip()
 
 INSTALL_REQUIRES_IMPORT = [
-    "IPython", "numpy", "scipy", "matplotlib", "pandas", "nibabel", "nipype",
+    "numpy", "scipy", "matplotlib", "pandas", "nibabel", "nipype",
     "pyxnat", "httplib2"
 ]
 INSTALL_REQUIRES = [

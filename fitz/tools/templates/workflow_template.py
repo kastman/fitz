@@ -65,7 +65,7 @@ def workflow_manager(project, exp, args, subj_source):
     # Convenience class to handle some sterotyped connections
     # between run-specific nodes (defined here) and the inputs
     # to the prepackaged workflow returned above
-    inwrap = fitz.tools.InputWrapper(wf, subj_source, source, input_node)
+    inwrap = fitz.tools.graphutils.InputWrapper(wf, subj_source, source, input_node)
     inwrap.connect_inputs()
 
     # Store workflow outputs to persistant location
@@ -73,7 +73,7 @@ def workflow_manager(project, exp, args, subj_source):
                 "{workflow_name}_sink")
 
     # Similar to above, class to handle sterotyped output connections
-    outwrap = fitz.tools.OutputWrapper(wf, subj_source, sink, output_node)
+    outwrap = fitz.tools.graphutils.OutputWrapper(wf, subj_source, sink, output_node)
     outwrap.set_subject_container()
     # outwrap.set_mapnode_substitutions(exp["n_runs"])
     outwrap.sink_outputs('outdir')

@@ -13,16 +13,17 @@ should run
 
    pip install git+git://github.com/kastman/fitz.git#egg=fitz
 
-Installing through pip should install all required depencies, but shout if
+Installing through pip should install all required dependencies, but shout if
 any were missed.
 
 Dependencies
 ------------
 
-Fitz requires Python 2.7, and does not run on Python 3. We strongly recommend
+Fitz should run on either Python 2 or 3. We strongly recommend
 using the `Anaconda <https://store.continuum.io/cshop/anaconda/>`_
 distribution, which ships with the majority of the Python packages needed to
-run fitz. The rest can be easily installed with pip.
+run fitz. The rest can be easily installed with pip or ``conda`` install
+commands.
 
 
 Non-Python Software
